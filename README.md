@@ -1,2 +1,3 @@
 # Rate My Landlord
 
+Finding affordable and reliable student housing in Atlanta can be challenging. Students often deal with hidden fees, unclear lease agreements, and inconsistent property management, making it difficult to know what they're signing up for. Rate My Landlord is a web platform that helps students make informed housing decisions by providing verified reviews and ratings from other student renters. The goal is to increase transparency in off-campus housing and give students a trusted resource before committing to a lease.
