@@ -1,0 +1,8 @@
+.header-page{
+    background-color: indigo;
+    width: 97%;
+    padding: 10px 20px;
+    height: 90px;
+    border-radius: 20px;
+    display: flex;
+}
