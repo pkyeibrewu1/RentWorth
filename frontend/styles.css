@@ -9,7 +9,7 @@ body {
     padding: 15px 30px;
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Pushes logo to far-left and nav-links to far-right */
+    justify-content: space-between; 
     width: 100%;
     box-sizing: border-box;
     height: 70px;
@@ -39,4 +39,13 @@ li {
 .nav-links li a {
     color: black;
     text-decoration: none;
+}
+
+.review-btn{
+    background-color: rgb(69,76,181);
+    color:white;
+    padding: 5px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
 }
