@@ -294,3 +294,42 @@ body {
 .submit-btn:hover {
     background-color: rgb(55, 61, 150);
 }
+
+/* Footer Styles */
+.site-footer {
+    background-color: #ffffff;
+    border-top: 1px solid #cbd5e1;
+    padding: 30px 20px;
+    text-align: center;
+    margin-top: 60px;
+    color: #475569;
+    font-size: 0.95rem;
+}
+
+.site-footer strong {
+    color: #1e293b;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.footer-links a {
+    color: rgb(69, 76, 181);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: rgb(55, 61, 150);
+    text-decoration: underline;
+}
+
+.footer-links span {
+    color: #94a3b8;
+}
