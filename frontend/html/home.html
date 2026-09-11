@@ -1,19 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Home Page</title>
-        <link rel="stylesheet" href="../styles.css">
-    </head>
-    <body>
-        <nav class="header-page">
-            <img src="../images/RentWorthLogo.png" alt="RentWorth Logo" class="header-logo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RentWorth | Student Housing Reviews</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
 
-            <ul class="nav-links">
-                <li><a href="#"><button class="review-btn">Write a review</button></a></li>
-                <li>About</li>
-            </ul>
-        </nav>
-    </body>
+    <!-- Navigation Bar -->
+    <nav class="header-page">
+        <img src="../images/RentWorthLogo.png" alt="RentWorth Logo" class="header-logo">
+
+        <ul class="nav-links">
+            <li><a href="#about">About</a></li>
+            <li><button class="review-btn" id="open-modal-btn">Write a review</button></li>
+        </ul>
+    </nav>
+
+    <!-- Hero / Search Section -->
+    <header class="hero-section">
+        <div class="hero-content">
+            <h1>Find your next student home.</h1>
+            <p>Read real, unfiltered reviews on dorms and off-campus apartments from students who lived there.</p>
+            
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search by complex name, university, or city...">
+            </div>
+        </div>
+    </header>
+
+    <!-- Property Directory -->
+    <main class="content-container">
+        <div class="section-title-row">
+            <h2>Explore Properties</h2>
+            <span id="listing-count">Showing all listings</span>
+        </div>
+
+        <!-- Apartment cards will be injected here dynamically by JavaScript -->
+        <div class="property-grid" id="property-grid"></div>
+    </main>
+
+    <!-- Write a Review Modal (Popup) -->
+    <div class="modal-overlay" id="review-modal" style="display: none;">
+        <div class="modal-box">
+            <div class="modal-top">
+                <h3>Leave an Anonymous Review</h3>
+                <button class="close-btn" id="close-modal-btn">&times;</button>
+            </div>
+
+            <form id="review-form">
+                <div class="form-group">
+                    <label for="property-select">Select Apartment / Dorm</label>
+                    <select id="property-select" required>
+                        <!-- Populated by JavaScript -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="student-email">Student Email (.edu)</label>
+                    <input type="email" id="student-email" placeholder="student@university.edu" required>
+                    <small>Never published publicly. Used only to verify you are a student.</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="room-type">Floorplan</label>
+                        <input type="text" id="room-type" placeholder="e.g., 2B/2B or Studio" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="rent-amount">Rent / Month ($)</label>
+                        <input type="number" id="rent-amount" placeholder="950" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="rating-overall">Overall Rating</label>
+                        <select id="rating-overall">
+                            <option value="5">5 ★ - Highly Recommend</option>
+                            <option value="4">4 ★ - Good</option>
+                            <option value="3">3 ★ - Average</option>
+                            <option value="2">2 ★ - Poor</option>
+                            <option value="1">1 ★ - Terrible</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="rating-wifi">Wi-Fi Quality</label>
+                        <select id="rating-wifi">
+                            <option value="5">5 ★ - Fast & Reliable</option>
+                            <option value="3">3 ★ - Acceptable</option>
+                            <option value="1">1 ★ - Constant Drops</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-check">
+                    <input type="checkbox" id="deposit-check" checked>
+                    <label for="deposit-check">Management returned the deposit fairly</label>
+                </div>
+
+                <div class="form-group">
+                    <label for="review-text">Review</label>
+                    <textarea id="review-text" rows="4" placeholder="How is the noise? Are there hidden fees? Does maintenance fix issues quickly?" required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Post Review</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../app.js"></script>
+</body>
 </html>
