@@ -24,15 +24,22 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ 
     storage,
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+    limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 app.use(cors());
 app.use(express.json());
 
-// 1. GET /api/reviews - Fetch all verified reviews
+// 1. GET /api/reviews - Fetch reviews along with any official management responses
 app.get('/api/reviews', (req, res) => {
-    const query = `SELECT id, complex_name, university, rating, floorplan, rent, tag, comment, verified, created_at FROM reviews ORDER BY id DESC`;
+    const query = `
+        SELECT 
+            r.id, r.complex_name, r.university, r.rating, r.floorplan, r.rent, r.tag, r.comment, r.verified, r.created_at,
+            m.responder_name, m.responder_title, m.response_text, m.created_at AS response_date
+        FROM reviews r
+        LEFT JOIN manager_responses m ON r.id = m.review_id
+        ORDER BY r.id DESC
+    `;
     db.all(query, [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
@@ -45,7 +52,6 @@ app.get('/api/reviews', (req, res) => {
 app.post('/api/reviews', upload.single('lease_proof'), (req, res) => {
     const { complex_name, university, student_email, rating, floorplan, rent, tag, comment } = req.body;
 
-    // Server-side validation
     if (!student_email || !student_email.toLowerCase().endsWith('.edu')) {
         return res.status(400).json({ error: 'A valid university email (.edu) is required.' });
     }
@@ -60,7 +66,7 @@ app.post('/api/reviews', upload.single('lease_proof'), (req, res) => {
         INSERT INTO reviews (complex_name, university, student_email, rating, floorplan, rent, tag, comment, lease_proof_path)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const params = [complex_name, university, student_email, parseFloat(rating), floorplan, parseInt(rent), tag, comment, leasePath];
+    const params = [complex_name, university, student_email, parseFloat(rating), floorplan, parseInt(rent, 10), tag, comment, leasePath];
 
     db.run(sql, params, function (err) {
         if (err) {
@@ -73,7 +79,31 @@ app.post('/api/reviews', upload.single('lease_proof'), (req, res) => {
     });
 });
 
-// 3. POST /api/claims - Property manager claim request
+// 3. POST /api/reviews/:id/response - Add official property manager reply
+app.post('/api/reviews/:id/response', (req, res) => {
+    const reviewId = req.params.id;
+    const { responder_name, responder_title, response_text } = req.body;
+
+    if (!responder_name || !responder_title || !response_text) {
+        return res.status(400).json({ error: 'All response fields are required.' });
+    }
+
+    const sql = `
+        INSERT INTO manager_responses (review_id, responder_name, responder_title, response_text)
+        VALUES (?, ?, ?, ?)
+    `;
+    db.run(sql, [reviewId, responder_name, responder_title, response_text], function (err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.status(201).json({
+            message: 'Official response published.',
+            responseId: this.lastID
+        });
+    });
+});
+
+// 4. POST /api/claims - Property manager claim request
 app.post('/api/claims', upload.single('proof'), (req, res) => {
     const { property_name, corporate_email, role } = req.body;
 

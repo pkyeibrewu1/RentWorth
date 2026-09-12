@@ -42,6 +42,19 @@ db.serialize(() => {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
+
+    // Manager Official Responses Table
+    db.run(`
+        CREATE TABLE IF NOT EXISTS manager_responses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            review_id INTEGER NOT NULL,
+            responder_name TEXT NOT NULL,
+            responder_title TEXT NOT NULL,
+            response_text TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE
+        )
+    `);
 });
 
 module.exports = db;
