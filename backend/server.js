@@ -3,34 +3,43 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 const db = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Ensure upload directories exist
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-// File storage configuration
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
+// Store uploads in memory first so sharp can process before saving to disk
+const storage = multer.memoryStorage();
 const upload = multer({ 
     storage,
-    limits: { fileSize: 5 * 1024 * 1024 }
+    limits: { fileSize: 10 * 1024 * 1024 }
 });
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(uploadDir));
 
-// 1. GET /api/reviews - Fetch reviews along with any official management responses
+// Helper to compress and write file safely
+async function processAndSaveImage(buffer, originalname) {
+    const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}.webp`;
+    const outputPath = path.join(uploadDir, filename);
+
+    await sharp(buffer)
+        .rotate() // Auto-orient based on EXIF
+        .resize({ width: 1400, withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toFile(outputPath);
+
+    return filename;
+}
+
+// 1. GET /api/reviews
 app.get('/api/reviews', (req, res) => {
     const query = `
         SELECT 
@@ -41,45 +50,44 @@ app.get('/api/reviews', (req, res) => {
         ORDER BY r.id DESC
     `;
     db.all(query, [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+        if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
 });
 
-// 2. POST /api/reviews - Submit review with verification proof
-app.post('/api/reviews', upload.single('lease_proof'), (req, res) => {
-    const { complex_name, university, student_email, rating, floorplan, rent, tag, comment } = req.body;
+// 2. POST /api/reviews
+app.post('/api/reviews', upload.single('lease_proof'), async (req, res) => {
+    try {
+        const { complex_name, university, student_email, rating, floorplan, rent, tag, comment } = req.body;
 
-    if (!student_email || !student_email.toLowerCase().endsWith('.edu')) {
-        return res.status(400).json({ error: 'A valid university email (.edu) is required.' });
-    }
-
-    if (!complex_name || !rating || !rent) {
-        return res.status(400).json({ error: 'Missing required review fields.' });
-    }
-
-    const leasePath = req.file ? req.file.path : null;
-
-    const sql = `
-        INSERT INTO reviews (complex_name, university, student_email, rating, floorplan, rent, tag, comment, lease_proof_path)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    const params = [complex_name, university, student_email, parseFloat(rating), floorplan, parseInt(rent, 10), tag, comment, leasePath];
-
-    db.run(sql, params, function (err) {
-        if (err) {
-            return res.status(500).json({ error: err.message });
+        if (!student_email || !student_email.toLowerCase().endsWith('.edu')) {
+            return res.status(400).json({ error: 'A valid university email (.edu) is required.' });
         }
-        res.status(201).json({
-            message: 'Review created successfully.',
-            reviewId: this.lastID
+        if (!complex_name || !rating || !rent) {
+            return res.status(400).json({ error: 'Missing required review fields.' });
+        }
+
+        let savedFilename = null;
+        if (req.file) {
+            savedFilename = await processAndSaveImage(req.file.buffer, req.file.originalname);
+        }
+
+        const sql = `
+            INSERT INTO reviews (complex_name, university, student_email, rating, floorplan, rent, tag, comment, lease_proof_path)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const params = [complex_name, university, student_email, parseFloat(rating), floorplan, parseInt(rent, 10), tag, comment, savedFilename];
+
+        db.run(sql, params, function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(201).json({ message: 'Review created successfully.', reviewId: this.lastID });
         });
-    });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to process and secure uploaded lease proof.' });
+    }
 });
 
-// 3. POST /api/reviews/:id/response - Add official property manager reply
+// 3. POST /api/reviews/:id/response
 app.post('/api/reviews/:id/response', (req, res) => {
     const reviewId = req.params.id;
     const { responder_name, responder_title, response_text } = req.body;
@@ -93,40 +101,58 @@ app.post('/api/reviews/:id/response', (req, res) => {
         VALUES (?, ?, ?, ?)
     `;
     db.run(sql, [reviewId, responder_name, responder_title, response_text], function (err) {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.status(201).json({
-            message: 'Official response published.',
-            responseId: this.lastID
-        });
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(201).json({ message: 'Official response published.', responseId: this.lastID });
     });
 });
 
-// 4. POST /api/claims - Property manager claim request
-app.post('/api/claims', upload.single('proof'), (req, res) => {
-    const { property_name, corporate_email, role } = req.body;
+// 4. POST /api/claims
+app.post('/api/claims', upload.single('proof'), async (req, res) => {
+    try {
+        const { property_name, corporate_email, role } = req.body;
 
-    if (!property_name || !corporate_email) {
-        return res.status(400).json({ error: 'Property name and official corporate email are required.' });
+        if (!property_name || !corporate_email) {
+            return res.status(400).json({ error: 'Property name and corporate email are required.' });
+        }
+
+        let savedProof = null;
+        if (req.file) {
+            savedProof = await processAndSaveImage(req.file.buffer, req.file.originalname);
+        }
+
+        const sql = `
+            INSERT INTO manager_claims (property_name, corporate_email, role, proof_path)
+            VALUES (?, ?, ?, ?)
+        `;
+        db.run(sql, [property_name, corporate_email, role, savedProof], function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(201).json({ message: 'Claim request submitted.', claimId: this.lastID });
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to store verification proof.' });
+    }
+});
+
+// 5. GET /api/admin/claims - View pending manager verification requests
+app.get('/api/admin/claims', (req, res) => {
+    const query = `SELECT * FROM manager_claims ORDER BY id DESC`;
+    db.all(query, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// 6. PATCH /api/admin/claims/:id - Update claim status (approved/rejected)
+app.patch('/api/admin/claims/:id', (req, res) => {
+    const { status } = req.body;
+    if (!['approved', 'rejected', 'pending'].includes(status)) {
+        return res.status(400).json({ error: 'Invalid status value.' });
     }
 
-    const proofPath = req.file ? req.file.path : null;
-
-    const sql = `
-        INSERT INTO manager_claims (property_name, corporate_email, role, proof_path)
-        VALUES (?, ?, ?, ?)
-    `;
-    const params = [property_name, corporate_email, role, proofPath];
-
-    db.run(sql, params, function (err) {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.status(201).json({
-            message: 'Claim request submitted for verification.',
-            claimId: this.lastID
-        });
+    const query = `UPDATE manager_claims SET status = ? WHERE id = ?`;
+    db.run(query, [status, req.params.id], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: `Claim updated to ${status}.` });
     });
 });
 
