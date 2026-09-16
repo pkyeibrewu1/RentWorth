@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RentWorth | Manager Verification Claims</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border-subtle);
+            margin-top: 20px;
+        }
+        .admin-table th, .admin-table td {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .admin-table th {
+            background: var(--bg-surface-elevated);
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .status-pending { background: rgba(251, 191, 36, 0.2); color: var(--accent-gold); }
+        .status-approved { background: rgba(52, 211, 153, 0.2); color: var(--score-green); }
+        .status-rejected { background: rgba(248, 113, 113, 0.2); color: var(--score-red); }
+        .action-btn {
+            border: none;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.8rem;
+            margin-right: 4px;
+        }
+        .btn-approve { background: var(--score-green); color: var(--text-dark); }
+        .btn-reject { background: var(--score-red); color: var(--text-dark); }
+    </style>
+</head>
+<body>
+    <nav class="header-page">
+        <a href="home.html" class="brand-link">
+            <img src="../images/RentWorthLogo.png" alt="RentWorth Logo" class="header-logo">
+        </a>
+        <div style="font-weight: 700; color: var(--accent-gold);">Internal Claim Portal</div>
+    </nav>
+
+    <main class="content-container">
+        <h2>Manager Tenancy Claims</h2>
+        <p class="subtext">Review identity proofs and assign verified status to community managers.</p>
+
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Property</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Proof</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="claims-tbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading claims...</td></tr>
+            </tbody>
+        </table>
+    </main>
+
+    <script>
+        const API_BASE = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+            ? "http://localhost:5000/api"
+            : "https://rentworth-api.onrender.com/api";
+
+        async function loadClaims() {
+            const res = await fetch(`${API_BASE}/admin/claims`);
+            const claims = await res.json();
+            const tbody = document.getElementById("claims-tbody");
+            tbody.innerHTML = "";
+
+            if (claims.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No claims submitted yet.</td></tr>`;
+                return;
+            }
+
+            claims.forEach(c => {
+                const tr = document.createElement("tr");
+                const uploadBase = API_BASE.replace('/api', '');
+                const proofHtml = c.proof_path 
+                    ? `<a href="${uploadBase}/uploads/${c.proof_path}" target="_blank" style="color: var(--accent-gold);">View Image</a>` 
+                    : 'None';
+
+                tr.innerHTML = `
+                    <td><strong>${c.property_name}</strong></td>
+                    <td>${c.corporate_email}</td>
+                    <td>${c.role}</td>
+                    <td>${proofHtml}</td>
+                    <td><span class="status-badge status-${c.status}">${c.status}</span></td>
+                    <td>
+                        <button class="action-btn btn-approve" onclick="updateClaim(${c.id}, 'approved')">Approve</button>
+                        <button class="action-btn btn-reject" onclick="updateClaim(${c.id}, 'rejected')">Reject</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function updateClaim(id, status) {
+            await fetch(`${API_BASE}/admin/claims/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status })
+            });
+            loadClaims();
+        }
+
+        loadClaims();
+    </script>
+</body>
+</html>

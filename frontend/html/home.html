@@ -38,16 +38,17 @@
             </div>
             
             <h1>Find out what living off-campus is <em>actually</em> like.</h1>
-            <p>Unvarnished reviews on student dorms, Greek houses, and private complexes — backed by verified leases and real unit photos.</p>
+            <p>Unfiltered reviews: "hidden fees, moldy places, broken elevators."</p>
 
-            <div class="search-bar">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="search-input" placeholder="Search reviews by complex, school, or tag (e.g. Castilian, UT Austin, Wi-Fi)...">
+            <div class="search-bar autocomplete-container">
+                <span class="search-icon">🔍</span> 
+                <input type="text" id="search-input" placeholder="Search by school, complex, or city (e.g., Georgia State, Atlanta)..." autocomplete="off">
+                <div class="autocomplete-dropdown" id="search-autocomplete-list"></div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Area: Reviews Stream Only -->
+    <!-- Main Content Area: Reviews Stream + Filter Bar -->
     <main class="content-container">
         <section class="reviews-feed-section">
             <div class="section-title-row">
@@ -57,9 +58,38 @@
                 </div>
             </div>
 
-            <div class="reviews-stream" id="reviews-stream">
-                <!-- Populated dynamically via app.js -->
+            <!-- Feed Filter Controls -->
+            <div class="feed-filter-bar">
+                <div class="filter-group">
+                    <label for="filter-school">School</label>
+                    <select id="filter-school">
+                        <option value="all">All Universities</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-complex">Complex / Place</label>
+                    <select id="filter-complex">
+                        <option value="all">All Complexes</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-rating">Min Rating</label>
+                    <select id="filter-rating">
+                        <option value="all">Any Rating</option>
+                        <option value="4.5">4.5+ ★ (Exceptional)</option>
+                        <option value="4.0">4.0+ ★ (Great)</option>
+                        <option value="3.0">3.0+ ★ (Average)</option>
+                        <option value="2.0">Below 3.0 ★ (Subpar)</option>
+                    </select>
+                </div>
+
+                <button class="clear-filters-btn" id="clear-filters-btn" title="Reset all filters">Reset Filters</button>
             </div>
+
+            <!-- Reviews Stream -->
+            <div class="reviews-stream" id="reviews-stream"></div>
         </section>
     </main>
 
@@ -75,14 +105,16 @@
             </div>
 
             <form id="review-form">
-                <div class="form-group">
+                <div class="form-group autocomplete-container">
                     <label for="property-name">Complex / Apartment Name</label>
-                    <input type="text" id="property-name" placeholder="e.g. The Castilian" required>
+                    <input type="text" id="property-name" placeholder="e.g. One12 Courtland, The Castilian" autocomplete="off" required>
+                    <div class="autocomplete-dropdown" id="modal-complex-autocomplete-list"></div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group autocomplete-container">
                     <label for="property-uni">University / College</label>
-                    <input type="text" id="property-uni" placeholder="e.g. UT Austin" required>
+                    <input type="text" id="property-uni" placeholder="Search your school or type to add a new one..." autocomplete="off" required>
+                    <div class="autocomplete-dropdown" id="modal-uni-autocomplete-list"></div>
                 </div>
 
                 <div class="form-group">
@@ -94,7 +126,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="room-type">Floorplan</label>
-                        <input type="text" id="room-type" placeholder="e.g., 4B/4B or Studio" required>
+                        <input type="text" id="room-type" placeholder="e.g., 4B/4B, Studio, Private Room" required>
                     </div>
                     <div class="form-group">
                         <label for="rent-amount">Monthly Rent ($/room)</label>
@@ -114,16 +146,19 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="form-tag">Top Defining Tag</label>
-                        <select id="form-tag">
-                            <option value="Paper Thin Walls">#PaperThinWalls</option>
-                            <option value="Hidden Utility Fees">#HiddenUtilityFees</option>
-                            <option value="Fast Maintenance">#FastMaintenance</option>
-                            <option value="Kept Security Deposit">#KeptSecurityDeposit</option>
-                            <option value="Frat Noise">#FratNoise</option>
-                            <option value="Safe &amp; Quiet">#SafeAndQuiet</option>
-                            <option value="Fast Wi-Fi">#FastWiFi</option>
-                        </select>
+                        <label for="form-tag">Top Hashtag</label>
+                        <input type="text" id="form-tag" list="preset-tags" placeholder="e.g., #PaperThinWalls or custom" required>
+                        <datalist id="preset-tags">
+                            <option value="PaperThinWalls">
+                            <option value="HiddenUtilityFees">
+                            <option value="FastMaintenance">
+                            <option value="KeptSecurityDeposit">
+                            <option value="FratNoise">
+                            <option value="SafeAndQuiet">
+                            <option value="FastWiFi">
+                            <option value="PredatoryTowing">
+                            <option value="GreatPool">
+                        </datalist>
                     </div>
                 </div>
 
@@ -132,20 +167,89 @@
                     <textarea id="review-text" rows="3" placeholder="Talk about hidden move-out fees, parking permits, pest control, or elevator wait times..." required></textarea>
                 </div>
 
+                <!-- Proof of Residence with Interactive In-Browser Redactor -->
                 <div class="verification-box">
-                    <label class="verification-label">🔒 Proof of Tenancy</label>
+                    <label class="verification-label">🔒 Proof of Tenancy & Privacy Tool</label>
                     <p class="verification-note">
-                        Upload a photo of your resident portal profile, first page of your lease, or utility bill. 
-                        <strong>Please black out your SSN and bank details.</strong>
+                        Upload your resident portal screenshot or lease page. You will be able to <strong>black out sensitive info (SSN, card numbers)</strong> before submitting.
                     </p>
                     <div class="upload-dropzone">
-                        <input type="file" id="lease-proof" accept=".pdf,image/*" required>
+                        <input type="file" id="lease-proof" accept="image/*" required>
                         <span class="upload-icon">📂</span>
-                        <span class="upload-text">Click or drag &amp; drop lease page / portal screenshot</span>
+                        <span class="upload-text" id="upload-status-text">Click or drag lease screenshot to redact & attach</span>
+                    </div>
+                    <div id="redaction-badge-container" style="display: none; margin-top: 10px;">
+                        <span class="redaction-success-badge">✓ Document redacted & ready for upload</span>
+                        <button type="button" class="re-edit-btn" id="re-edit-btn">Edit Redaction</button>
                     </div>
                 </div>
 
                 <button type="submit" class="submit-btn">Submit Verified Review</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Interactive Canvas Document Redactor Modal -->
+    <div class="modal-overlay" id="redactor-modal" style="display: none; z-index: 3000;">
+        <div class="modal-box redactor-modal-box">
+            <div class="modal-top">
+                <div>
+                    <h3>Black Out Private Info</h3>
+                    <p class="modal-subtitle">Drag your mouse across any sensitive details (SSN, account balance, legal signature).</p>
+                </div>
+                <button class="close-btn" id="close-redactor-btn">&times;</button>
+            </div>
+
+            <div class="redactor-toolbar">
+                <span class="redactor-instruction">⬛ Drag across image to draw black blackout boxes</span>
+                <div class="redactor-actions">
+                    <button type="button" class="tool-btn" id="undo-redact-btn">Undo Box</button>
+                    <button type="button" class="tool-btn" id="clear-redact-btn">Clear All</button>
+                </div>
+            </div>
+
+            <div class="canvas-wrapper">
+                <canvas id="redaction-canvas"></canvas>
+            </div>
+
+            <div class="redactor-footer">
+                <button type="button" class="cancel-redact-btn" id="cancel-redact-btn">Cancel</button>
+                <button type="button" class="save-redact-btn" id="save-redact-btn">Save & Use Redacted Proof</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manager Reply Modal -->
+    <div class="modal-overlay" id="reply-modal" style="display: none; z-index: 2500;">
+        <div class="modal-box">
+            <div class="modal-top">
+                <div>
+                    <h3>Official Management Response</h3>
+                    <p class="modal-subtitle" id="reply-modal-subtitle">Post a verified resolution or clarification.</p>
+                </div>
+                <button class="close-btn" id="close-reply-modal-btn">&times;</button>
+            </div>
+
+            <form id="reply-form">
+                <input type="hidden" id="reply-review-id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reply-manager-name">Your Full Name</label>
+                        <input type="text" id="reply-manager-name" placeholder="e.g., Sarah Jenkins" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reply-manager-title">Official Title</label>
+                        <input type="text" id="reply-manager-title" placeholder="e.g., Community Director" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reply-text">Public Management Statement</label>
+                    <textarea id="reply-text" rows="4" placeholder="Detail action steps taken (e.g., HVAC service schedules, maintenance team updates)..." required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Publish Verified Reply</button>
             </form>
         </div>
     </div>
@@ -195,13 +299,13 @@
 
     <!-- Developer Footer -->
     <footer class="site-footer">
-        <p>Built &amp; Engineered by <strong>Your Name</strong></p>
+        <p>Built &amp; Engineered by <strong>Pamela Kyei Brewu </strong></p>
         <div class="footer-links">
-            <a href="https://github.com/your-username" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://github.com/pkyeibrewu1" target="_blank" rel="noopener noreferrer">GitHub</a>
             <span>•</span>
-            <a href="https://linkedin.com/in/your-profile" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a href="https://linkedin.com/in/pkyeibrewu" target="_blank" rel="noopener noreferrer">LinkedIn</a>
             <span>•</span>
-            <a href="mailto:your.email@example.com">Contact</a>
+            <a href="mailto:pamelakyei15@gmail.com">Contact</a>
         </div>
     </footer>
 
