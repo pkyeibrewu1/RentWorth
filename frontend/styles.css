@@ -128,7 +128,6 @@ body {
   background: var(--accent-blue-soft);
 }
 
-/* Primary Action CTA Button */
 .btn-primary {
   background-color: var(--accent-gold);
   color: #080F1F;
@@ -189,7 +188,7 @@ body {
    Hero Section
    ========================================================================== */
 .hero-section {
-  padding: 52px 20px 32px;
+  padding: 52px 20px 24px;
   text-align: center;
   max-width: 820px;
   margin: 0 auto;
@@ -206,22 +205,13 @@ body {
   border-radius: 9999px;
   font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
   margin-bottom: 20px;
 }
 
 .badge-dot {
   color: var(--accent-gold);
   font-size: 0.7rem;
-}
-
-.badge-sep {
-  opacity: 0.4;
-}
-
-.badge-subtext {
-  color: var(--text-muted);
-  font-weight: 400;
 }
 
 .hero-title {
@@ -237,13 +227,27 @@ body {
   color: var(--accent-gold);
 }
 
+.hero-pain-points {
+  color: var(--text-main);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
 .hero-subtitle {
   font-size: 1rem;
   color: var(--text-slate);
   line-height: 1.6;
   max-width: 600px;
-  margin: 0 auto 28px;
+  margin: 0 auto 12px;
   font-weight: 400;
+}
+
+.hero-verification-note {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  max-width: 580px;
+  margin: 0 auto 28px;
 }
 
 .search-wrapper {
@@ -323,7 +327,87 @@ body {
 }
 
 /* ==========================================================================
-   Filter Controls (Muted #94A3B8 Labels, #111D35 Inputs)
+   Reality Cards Section
+   ========================================================================== */
+.reality-section {
+  padding: 10px 20px 48px;
+  max-width: 1060px;
+  margin: 0 auto;
+}
+
+.reality-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.reality-kicker {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold);
+  margin-bottom: 8px;
+}
+
+.reality-header h2 {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.reality-philosophy {
+  font-size: 0.92rem;
+  color: var(--text-slate);
+  font-style: italic;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.reality-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.reality-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.reality-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-focus);
+}
+
+.reality-icon {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+
+.reality-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.reality-card p {
+  font-size: 0.88rem;
+  color: var(--text-slate);
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   Filter Controls
    ========================================================================== */
 .main-container {
   max-width: 1060px;
@@ -356,7 +440,7 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-muted); /* Calm, clean label color */
+  color: var(--text-muted);
 }
 
 .filter-group select,
@@ -794,7 +878,7 @@ body {
   }
 
   .hero-section {
-    padding: 28px 14px 20px;
+    padding: 28px 14px 18px;
   }
 
   .hero-title {
@@ -803,7 +887,23 @@ body {
 
   .hero-subtitle {
     font-size: 0.9rem;
-    margin-bottom: 18px;
+  }
+
+  .reality-section {
+    padding: 0 16px 36px;
+  }
+
+  .reality-header h2 {
+    font-size: 1.35rem;
+  }
+
+  .reality-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .reality-card {
+    padding: 16px;
   }
 
   .form-row {
