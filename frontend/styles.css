@@ -188,7 +188,7 @@ body {
    Hero Section
    ========================================================================== */
 .hero-section {
-  padding: 52px 20px 24px;
+  padding: 56px 20px 32px;
   text-align: center;
   max-width: 820px;
   margin: 0 auto;
@@ -203,10 +203,10 @@ body {
   color: var(--text-slate);
   padding: 5px 14px;
   border-radius: 9999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  margin-bottom: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-bottom: 18px;
 }
 
 .badge-dot {
@@ -215,37 +215,33 @@ body {
 }
 
 .hero-title {
-  font-size: 2.35rem;
+  font-size: 2.6rem;
   font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-  margin-bottom: 14px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
   color: var(--text-main);
+  margin-bottom: 8px;
 }
 
-.highlight-text {
+.hero-supporting-line {
+  font-size: 1.15rem;
+  font-weight: 600;
   color: var(--accent-gold);
+  margin-bottom: 18px;
+  letter-spacing: -0.01em;
 }
 
 .hero-pain-points {
   color: var(--text-main);
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 600;
   margin-bottom: 4px;
 }
 
 .hero-subtitle {
-  font-size: 1rem;
+  font-size: 0.96rem;
   color: var(--text-slate);
-  line-height: 1.6;
-  max-width: 600px;
-  margin: 0 auto 12px;
-  font-weight: 400;
-}
-
-.hero-verification-note {
-  font-size: 0.82rem;
-  color: var(--text-muted);
+  line-height: 1.5;
   max-width: 580px;
   margin: 0 auto 28px;
 }
@@ -324,6 +320,37 @@ body {
 .match-text {
   color: var(--accent-gold);
   font-weight: 600;
+}
+
+.hero-trust-indicators {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: var(--text-slate);
+}
+
+.trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.check-icon {
+  color: var(--score-green);
+  font-weight: 700;
+}
+
+.lock-icon {
+  font-size: 0.8rem;
+}
+
+.trust-sep {
+  color: var(--text-dim);
+  opacity: 0.5;
 }
 
 /* ==========================================================================
@@ -817,6 +844,39 @@ body {
 }
 
 /* ==========================================================================
+   About Modal
+   ========================================================================== */
+.about-card {
+  max-width: 520px;
+}
+
+.about-content p {
+  color: var(--text-slate);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.founder-signature {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+}
+
+.founder-signature strong {
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.founder-signature span {
+  font-size: 0.8rem;
+  color: var(--accent-gold);
+  font-weight: 500;
+}
+
+/* ==========================================================================
    Redactor Canvas Modal
    ========================================================================== */
 .redactor-card {
@@ -856,6 +916,68 @@ body {
 }
 
 /* ==========================================================================
+   Footer
+   ========================================================================== */
+.site-footer {
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  padding: 36px 20px 28px;
+  margin-top: 40px;
+}
+
+.footer-container {
+  max-width: 1060px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-brand .brand-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.footer-tagline {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.footer-meta {
+  text-align: right;
+}
+
+.footer-credit {
+  font-size: 0.84rem;
+  color: var(--text-slate);
+}
+
+.creator-name {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.footer-copy {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.footer-copy a {
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.footer-copy a:hover {
+  color: var(--text-main);
+}
+
+/* ==========================================================================
    Mobile Responsive Rules (< 768px)
    ========================================================================== */
 @media (max-width: 768px) {
@@ -878,15 +1000,25 @@ body {
   }
 
   .hero-section {
-    padding: 28px 14px 18px;
+    padding: 32px 16px 20px;
   }
 
   .hero-title {
-    font-size: 1.7rem;
+    font-size: 1.85rem;
+  }
+
+  .hero-supporting-line {
+    font-size: 1rem;
+    margin-bottom: 14px;
   }
 
   .hero-subtitle {
     font-size: 0.9rem;
+  }
+
+  .hero-trust-indicators {
+    gap: 8px;
+    font-size: 0.78rem;
   }
 
   .reality-section {
@@ -961,108 +1093,12 @@ body {
   .redactor-button-group button {
     flex: 1;
   }
-}
 
-/* ==========================================================================
-   Footer
-   ========================================================================== */
-.site-footer {
-  background-color: var(--bg-surface);
-  border-top: 1px solid var(--border-subtle);
-  padding: 36px 20px 28px;
-  margin-top: 40px;
-}
-
-.footer-container {
-  max-width: 1060px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.footer-brand .brand-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.footer-tagline {
-  font-size: 0.84rem;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.footer-meta {
-  text-align: right;
-}
-
-.footer-credit {
-  font-size: 0.84rem;
-  color: var(--text-slate);
-}
-
-.creator-name {
-  color: var(--text-main);
-  font-weight: 600;
-}
-
-.footer-copy {
-  font-size: 0.76rem;
-  color: var(--text-dim);
-  margin-top: 4px;
-}
-
-.footer-copy a {
-  color: var(--text-dim);
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.footer-copy a:hover {
-  color: var(--text-main);
-}
-
-/* ==========================================================================
-   About Modal
-   ========================================================================== */
-.about-card {
-  max-width: 520px;
-}
-
-.about-content p {
-  color: var(--text-slate);
-  font-size: 0.95rem;
-  line-height: 1.6;
-  margin-bottom: 14px;
-}
-
-.founder-signature {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-}
-
-.founder-signature strong {
-  font-size: 0.95rem;
-  color: var(--text-main);
-}
-
-.founder-signature span {
-  font-size: 0.8rem;
-  color: var(--accent-gold);
-  font-weight: 500;
-}
-
-@media (max-width: 768px) {
   .footer-container {
     flex-direction: column;
     align-items: flex-start;
   }
+
   .footer-meta {
     text-align: left;
   }
