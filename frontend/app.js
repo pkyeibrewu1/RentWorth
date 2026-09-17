@@ -1,4 +1,4 @@
-// Automatically use localhost when testing locally, or your cloud URL when deployed
+// Automatically use localhost when testing locally, or your production URL when deployed
 const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:5000/api"
     : "https://rentworth-api.onrender.com/api";
@@ -59,7 +59,7 @@ let apartmentsList = [
     }
 ];
 
-// University repository (loaded dynamically + fallback list)
+// Fallback & dynamic university repository
 let allUniversities = [
     "Georgetown University",
     "George Washington University",
@@ -93,7 +93,7 @@ async function loadFullCollegeList() {
         
         allUniversities = [...new Set([...usSchools, ...allUniversities])].sort();
     } catch (err) {
-        console.warn("Using offline fallback university dataset:", err);
+        console.warn("Using fallback university dataset:", err);
     }
 }
 loadFullCollegeList();
@@ -164,8 +164,14 @@ function getScoreColorClass(score) {
     return "score-red";
 }
 
-// 1. Fetch Reviews from Backend API
+// 1. Fetch Reviews with Warm-up State
 async function fetchReviews() {
+    reviewsStream.innerHTML = `
+        <div style="text-align: center; padding: 45px 20px; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <p style="color: var(--accent-gold); font-weight: 700; margin-bottom: 6px;">Loading verified reviews...</p>
+            <p style="color: var(--text-muted); font-size: 0.82rem;">Please allow 20-30 seconds if the free cloud backend is waking up.</p>
+        </div>
+    `;
     try {
         const response = await fetch(`${API_BASE_URL}/reviews`);
         if (!response.ok) throw new Error("Failed to fetch reviews");
@@ -174,7 +180,12 @@ async function fetchReviews() {
         applyAllFilters();
     } catch (error) {
         console.error("Error loading reviews:", error);
-        reviewsStream.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 40px 0;">Unable to connect to the server. Ensure backend is running on port 5000.</p>`;
+        reviewsStream.innerHTML = `
+            <div style="text-align: center; padding: 45px 20px; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <p style="color: var(--score-red); font-weight: 700; margin-bottom: 6px;">Unable to load reviews.</p>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">The backend server may still be spinning up. Please refresh the page in a moment.</p>
+            </div>
+        `;
     }
 }
 
@@ -204,7 +215,7 @@ function populateFilterDropdowns() {
     if (complexes.includes(currentComplex)) filterComplexSelect.value = currentComplex;
 }
 
-// 3. Central Filter Engine
+// 3. Filter Engine
 function applyAllFilters() {
     const searchQuery = searchInput.value.toLowerCase().trim();
     const selectedSchool = filterSchoolSelect.value;
@@ -276,7 +287,7 @@ function renderReviews(items, filterLabel = "") {
         reviewsStream.innerHTML = `
             <div style="text-align: center; padding: 45px 20px; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
                 <p style="color: var(--text-main); font-weight: 700; margin-bottom: 6px;">No reviews match this filter.</p>
-                <p style="color: var(--text-muted); font-size: 0.88rem;">Try resetting your filters or be the first student to leave a review!</p>
+                <p style="color: var(--text-muted); font-size: 0.88rem;">Try clearing your filters or be the first student to submit a review.</p>
             </div>
         `;
         return;
@@ -477,7 +488,7 @@ saveRedactBtn.addEventListener("click", () => {
     }, "image/jpeg", 0.92);
 });
 
-// 6. College Autocomplete
+// 6. University Autocomplete
 function setupUniversityAutocomplete(inputElement, dropdownElement, onSelectCallback, allowAddCustom = false) {
     inputElement.addEventListener("input", (e) => {
         const rawQuery = e.target.value.trim();
@@ -653,7 +664,7 @@ clearFiltersBtn.addEventListener("click", () => {
     applyAllFilters();
 });
 
-// Navbar "Best Rated" Filter Shortcut
+// Navbar Shortcut
 navBestRated.addEventListener("click", (e) => {
     e.preventDefault();
     filterRatingSelect.value = "4.5";
@@ -669,7 +680,7 @@ closeModalBtn.addEventListener("click", () => {
     reviewModal.style.display = "none";
 });
 
-// Form Submission with Redacted Document Blob
+// Form Submission
 reviewForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -736,7 +747,7 @@ reviewForm.addEventListener("submit", async (e) => {
             throw new Error(errData.error || "Submission failed");
         }
 
-        alert("Review verified and submitted with protected redacted tenancy proof!");
+        alert("Review submitted with verified, redacted proof of tenancy!");
         reviewForm.reset();
         finalRedactedBlob = null;
         baseImage = null;
@@ -790,7 +801,7 @@ replyForm.addEventListener("submit", async (e) => {
     }
 });
 
-// Manager Portal Modal Handlers
+// Manager Claim Handlers
 navClaimBtn.addEventListener("click", (e) => {
     e.preventDefault();
     managerModal.style.display = "flex";
@@ -832,7 +843,7 @@ managerForm.addEventListener("submit", async (e) => {
     }
 });
 
-// Backdrop clicks
+// Modal outside clicks
 window.addEventListener("click", (e) => {
     if (e.target === reviewModal) reviewModal.style.display = "none";
     if (e.target === managerModal) managerModal.style.display = "none";
@@ -840,5 +851,5 @@ window.addEventListener("click", (e) => {
     if (e.target === replyModal) replyModal.style.display = "none";
 });
 
-// Initial Load
+// Initial Fetch
 fetchReviews();
