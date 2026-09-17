@@ -1,314 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RentWorth | Verified Student Housing Reviews</title>
-    <link rel="stylesheet" href="./styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RentWorth | Verified Student Housing Reviews</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Header Navigation -->
-    <nav class="header-page">
-        <div class="header-left">
-            <a href="#" class="brand-link">
-                <img src="./images/RentWorthLogo.png" alt="RentWorth Logo" class="header-logo">
-            </a>
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <img src="./images/RentWorthLogo.png" alt="RentWorth Logo" class="brand-logo" onerror="this.style.display='none'">
+        <div class="brand-text">
+          <span class="brand-title">RentWorth</span>
+          <span class="brand-sub">Verified Student Housing</span>
         </div>
+      </div>
+      <nav class="nav-links">
+        <a href="#" id="nav-best-rated" class="nav-item">Top Rated</a>
+        <a href="#" id="nav-claim-btn" class="nav-item">For Managers</a>
+        <a href="./html/admin.html" class="nav-item">Admin</a>
+        <button type="button" class="btn-primary" id="open-modal-btn">+ Rate a Place</button>
+      </nav>
+    </div>
+  </header>
 
-        <ul class="nav-links nav-center">
-            <li><a href="#best-rated" id="nav-best-rated">Best Rated</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#claim-portal" class="manager-link" id="nav-claim-btn">For Managers</a></li>
-        </ul>
-
-        <div class="nav-actions">
-            <button class="review-btn" id="open-modal-btn">Rate a Place</button>
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Real leases. Real rents.<br><span class="highlight-text">Zero fake reviews.</span></h1>
+      <p class="hero-subtitle">Every review is backed by an authenticated student email and a verified lease with sensitive personal information redacted directly in your browser.</p>
+      
+      <div class="search-wrapper">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Search by university, apartment complex, or keyword..." autocomplete="off">
         </div>
-    </nav>
+        <div id="search-autocomplete-list" class="autocomplete-container"></div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Search Hero -->
-    <header class="hero-section">
-        <div class="hero-content">
-            <div class="trust-pill">
-                <span class="live-dot"></span>
-                <span class="trust-text">Verified by Real Tenants</span>
-                <span class="trust-divider">•</span>
-                <span class="trust-highlight">No Landlord Astroturfing</span>
-            </div>
-            
-            <h1>Find out what living off-campus is <em>actually</em> like.</h1>
-            <p>Unfiltered reviews: "hidden fees, moldy places, broken elevators."</p>
+  <!-- Filter Bar & Feed -->
+  <main class="main-container">
+    <section class="filter-controls-card">
+      <div class="filter-group">
+        <label for="filter-school">University</label>
+        <select id="filter-school">
+          <option value="all">All Universities</option>
+        </select>
+      </div>
 
-            <div class="search-bar autocomplete-container">
-                <span class="search-icon">🔍</span> 
-                <input type="text" id="search-input" placeholder="Search by school, complex, or city (e.g., Georgia State, Atlanta)..." autocomplete="off">
-                <div class="autocomplete-dropdown" id="search-autocomplete-list"></div>
-            </div>
-        </div>
-    </header>
+      <div class="filter-group">
+        <label for="filter-complex">Apartment</label>
+        <select id="filter-complex">
+          <option value="all">All Complexes</option>
+        </select>
+      </div>
 
-    <!-- Main Content Area: Reviews Stream + Filter Bar -->
-    <main class="content-container">
-        <section class="reviews-feed-section">
-            <div class="section-title-row">
-                <div>
-                    <h2 id="view-title">Recent Verified Tenant Reviews</h2>
-                    <span class="subtext" id="review-count">Real experiences submitted by students with proof of tenancy</span>
-                </div>
-            </div>
+      <div class="filter-group">
+        <label for="filter-rating">Rating</label>
+        <select id="filter-rating">
+          <option value="all">All Ratings</option>
+          <option value="4.5">★ 4.5+ (Excellent)</option>
+          <option value="4.0">★ 4.0+ (Great)</option>
+          <option value="3.0">★ 3.0+ (Average)</option>
+          <option value="2.0">&lt; 3.0 (Poor)</option>
+        </select>
+      </div>
 
-            <!-- Feed Filter Controls -->
-            <div class="feed-filter-bar">
-                <div class="filter-group">
-                    <label for="filter-school">School</label>
-                    <select id="filter-school">
-                        <option value="all">All Universities</option>
-                    </select>
-                </div>
+      <button type="button" class="btn-secondary" id="clear-filters-btn">Reset</button>
+    </section>
 
-                <div class="filter-group">
-                    <label for="filter-complex">Complex / Place</label>
-                    <select id="filter-complex">
-                        <option value="all">All Complexes</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="filter-rating">Min Rating</label>
-                    <select id="filter-rating">
-                        <option value="all">Any Rating</option>
-                        <option value="4.5">4.5+ ★ (Exceptional)</option>
-                        <option value="4.0">4.0+ ★ (Great)</option>
-                        <option value="3.0">3.0+ ★ (Average)</option>
-                        <option value="2.0">Below 3.0 ★ (Subpar)</option>
-                    </select>
-                </div>
-
-                <button class="clear-filters-btn" id="clear-filters-btn" title="Reset all filters">Reset Filters</button>
-            </div>
-
-            <!-- Reviews Stream -->
-            <div class="reviews-stream" id="reviews-stream"></div>
-        </section>
-    </main>
-
-    <!-- Review Submission Modal -->
-    <div class="modal-overlay" id="review-modal" style="display: none;">
-        <div class="modal-box">
-            <div class="modal-top">
-                <div>
-                    <h3>Leave an Anonymous Review</h3>
-                    <p class="modal-subtitle">Help future classmates dodge bad leases.</p>
-                </div>
-                <button class="close-btn" id="close-modal-btn" aria-label="Close modal">&times;</button>
-            </div>
-
-            <form id="review-form">
-                <div class="form-group autocomplete-container">
-                    <label for="property-name">Complex / Apartment Name</label>
-                    <input type="text" id="property-name" placeholder="e.g. One12 Courtland, The Castilian" autocomplete="off" required>
-                    <div class="autocomplete-dropdown" id="modal-complex-autocomplete-list"></div>
-                </div>
-
-                <div class="form-group autocomplete-container">
-                    <label for="property-uni">University / College</label>
-                    <input type="text" id="property-uni" placeholder="Search your school or type to add a new one..." autocomplete="off" required>
-                    <div class="autocomplete-dropdown" id="modal-uni-autocomplete-list"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="student-email">University Email (.edu)</label>
-                    <input type="email" id="student-email" placeholder="student@university.edu" required>
-                    <small>Kept strictly private. Confirms authentic student tenancy.</small>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="room-type">Floorplan</label>
-                        <input type="text" id="room-type" placeholder="e.g., 4B/4B, Studio, Private Room" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="rent-amount">Monthly Rent ($/room)</label>
-                        <input type="number" id="rent-amount" placeholder="950" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="rating-overall">Overall Rating</label>
-                        <select id="rating-overall">
-                            <option value="5">5.0 - Awesome</option>
-                            <option value="4">4.0 - Good</option>
-                            <option value="3">3.0 - Average</option>
-                            <option value="2">2.0 - Poor</option>
-                            <option value="1">1.0 - Nightmare</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="form-tag">Top Hashtag</label>
-                        <input type="text" id="form-tag" list="preset-tags" placeholder="e.g., #PaperThinWalls or custom" required>
-                        <datalist id="preset-tags">
-                            <option value="PaperThinWalls">
-                            <option value="HiddenUtilityFees">
-                            <option value="FastMaintenance">
-                            <option value="KeptSecurityDeposit">
-                            <option value="FratNoise">
-                            <option value="SafeAndQuiet">
-                            <option value="FastWiFi">
-                            <option value="PredatoryTowing">
-                            <option value="GreatPool">
-                        </datalist>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="review-text">Resident Advice</label>
-                    <textarea id="review-text" rows="3" placeholder="Talk about hidden move-out fees, parking permits, pest control, or elevator wait times..." required></textarea>
-                </div>
-
-                <!-- Proof of Residence with Interactive In-Browser Redactor -->
-                <div class="verification-box">
-                    <label class="verification-label">🔒 Proof of Tenancy & Privacy Tool</label>
-                    <p class="verification-note">
-                        Upload your resident portal screenshot or lease page. You will be able to <strong>black out sensitive info (SSN, card numbers)</strong> before submitting.
-                    </p>
-                    <div class="upload-dropzone">
-                        <input type="file" id="lease-proof" accept="image/*" required>
-                        <span class="upload-icon">📂</span>
-                        <span class="upload-text" id="upload-status-text">Click or drag lease screenshot to redact & attach</span>
-                    </div>
-                    <div id="redaction-badge-container" style="display: none; margin-top: 10px;">
-                        <span class="redaction-success-badge">✓ Document redacted & ready for upload</span>
-                        <button type="button" class="re-edit-btn" id="re-edit-btn">Edit Redaction</button>
-                    </div>
-                </div>
-
-                <button type="submit" class="submit-btn">Submit Verified Review</button>
-            </form>
-        </div>
+    <div class="feed-header">
+      <h2 id="view-title">Recent Verified Tenant Reviews</h2>
+      <span id="review-count" class="review-counter-chip">Loading reviews...</span>
     </div>
 
-    <!-- Interactive Canvas Document Redactor Modal -->
-    <div class="modal-overlay" id="redactor-modal" style="display: none; z-index: 3000;">
-        <div class="modal-box redactor-modal-box">
-            <div class="modal-top">
-                <div>
-                    <h3>Black Out Private Info</h3>
-                    <p class="modal-subtitle">Drag your mouse across any sensitive details (SSN, account balance, legal signature).</p>
-                </div>
-                <button class="close-btn" id="close-redactor-btn">&times;</button>
-            </div>
+    <div id="reviews-stream" class="reviews-grid"></div>
+  </main>
 
-            <div class="redactor-toolbar">
-                <span class="redactor-instruction">⬛ Drag across image to draw black blackout boxes</span>
-                <div class="redactor-actions">
-                    <button type="button" class="tool-btn" id="undo-redact-btn">Undo Box</button>
-                    <button type="button" class="tool-btn" id="clear-redact-btn">Clear All</button>
-                </div>
-            </div>
-
-            <div class="canvas-wrapper">
-                <canvas id="redaction-canvas"></canvas>
-            </div>
-
-            <div class="redactor-footer">
-                <button type="button" class="cancel-redact-btn" id="cancel-redact-btn">Cancel</button>
-                <button type="button" class="save-redact-btn" id="save-redact-btn">Save & Use Redacted Proof</button>
-            </div>
+  <!-- Submit Review Modal -->
+  <div class="modal" id="review-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Submit a Verified Review</h3>
+        <button type="button" class="close-btn" id="close-modal-btn">&times;</button>
+      </div>
+      <form id="review-form">
+        <div class="form-row">
+          <div class="form-group relative">
+            <label for="property-name">Apartment Complex</label>
+            <input type="text" id="property-name" placeholder="e.g. One12 Courtland" autocomplete="off" required>
+            <div id="modal-complex-autocomplete-list" class="autocomplete-container"></div>
+          </div>
+          <div class="form-group relative">
+            <label for="property-uni">Affiliated University</label>
+            <input type="text" id="property-uni" placeholder="e.g. Georgia State University" autocomplete="off" required>
+            <div id="modal-uni-autocomplete-list" class="autocomplete-container"></div>
+          </div>
         </div>
+
+        <!-- Student Email & Verification Block -->
+        <div class="form-group">
+          <label for="student-email">University Email (.edu only)</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="email" id="student-email" placeholder="student@university.edu" required>
+            <button type="button" class="btn-secondary" id="send-otp-btn" style="white-space: nowrap; padding: 0 16px;">Send Code</button>
+          </div>
+        </div>
+
+        <div class="form-group" id="otp-container" style="display: none;">
+          <label for="email-otp-input">Enter 6-Digit Email PIN</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="email-otp-input" placeholder="e.g. 583920" maxlength="6">
+            <button type="button" class="btn-secondary" id="verify-otp-btn" style="white-space: nowrap; padding: 0 16px;">Verify PIN</button>
+          </div>
+          <small id="otp-status" style="display: block; margin-top: 6px; font-size: 0.82rem;"></small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="room-type">Floorplan</label>
+            <input type="text" id="room-type" placeholder="e.g. 2B/2B, Studio, 4B/4B" required>
+          </div>
+          <div class="form-group">
+            <label for="rent-amount">Monthly Rent ($/mo)</label>
+            <input type="number" id="rent-amount" placeholder="e.g. 1150" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="rating-overall">Overall Score (1 - 5)</label>
+            <select id="rating-overall" required>
+              <option value="5.0">5.0 - Exceptional</option>
+              <option value="4.0">4.0 - Great Living</option>
+              <option value="3.0">3.0 - Adequate</option>
+              <option value="2.0">2.0 - Problematic</option>
+              <option value="1.0">1.0 - Do Not Recommend</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-tag">Category Tag</label>
+            <input type="text" id="form-tag" placeholder="e.g. ResponsiveStaff, CleanPool">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="review-text">Written Feedback</label>
+          <textarea id="review-text" rows="4" placeholder="Describe noise levels, amenity conditions, package handling, or maintenance response..." required></textarea>
+        </div>
+
+        <!-- Document Redaction Upload Section -->
+        <div class="form-group">
+          <label>Proof of Tenancy (Lease / Resident Portal Screenshot)</label>
+          <div class="upload-dropzone">
+            <input type="file" id="lease-proof" accept="image/*" class="file-input-hidden">
+            <label for="lease-proof" class="dropzone-label">
+              <span id="upload-status-text">Click or drag lease screenshot to redact &amp; attach</span>
+            </label>
+            <div id="redaction-badge-container" style="display: none; margin-top: 8px;">
+              <span class="badge-redacted">✓ Lease PII Redacted</span>
+              <button type="button" id="re-edit-btn" class="text-button">Re-edit Redactions</button>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-gold-action">Submit Verified Review</button>
+      </form>
     </div>
+  </div>
 
-    <!-- Manager Reply Modal -->
-    <div class="modal-overlay" id="reply-modal" style="display: none; z-index: 2500;">
-        <div class="modal-box">
-            <div class="modal-top">
-                <div>
-                    <h3>Official Management Response</h3>
-                    <p class="modal-subtitle" id="reply-modal-subtitle">Post a verified resolution or clarification.</p>
-                </div>
-                <button class="close-btn" id="close-reply-modal-btn">&times;</button>
-            </div>
-
-            <form id="reply-form">
-                <input type="hidden" id="reply-review-id">
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="reply-manager-name">Your Full Name</label>
-                        <input type="text" id="reply-manager-name" placeholder="e.g., Sarah Jenkins" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="reply-manager-title">Official Title</label>
-                        <input type="text" id="reply-manager-title" placeholder="e.g., Community Director" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="reply-text">Public Management Statement</label>
-                    <textarea id="reply-text" rows="4" placeholder="Detail action steps taken (e.g., HVAC service schedules, maintenance team updates)..." required></textarea>
-                </div>
-
-                <button type="submit" class="submit-btn">Publish Verified Reply</button>
-            </form>
+  <!-- In-Browser Document Redactor Modal -->
+  <div class="modal redactor-modal" id="redactor-modal">
+    <div class="modal-card redactor-card">
+      <div class="modal-header">
+        <div>
+          <h3>Redact Sensitive Personal Information</h3>
+          <p class="modal-desc">Drag blackout boxes over your full name, unit number, SSN, and signatures. Images are sanitized locally before upload.</p>
         </div>
+        <button type="button" class="close-btn" id="close-redactor-btn">&times;</button>
+      </div>
+
+      <div class="canvas-scroll-wrapper">
+        <canvas id="redaction-canvas"></canvas>
+      </div>
+
+      <div class="redactor-actions-row">
+        <div class="redactor-button-group">
+          <button type="button" class="btn-secondary" id="undo-redact-btn">Undo Last Box</button>
+          <button type="button" class="btn-secondary" id="clear-redact-btn">Clear All</button>
+        </div>
+        <div class="redactor-button-group">
+          <button type="button" class="btn-secondary" id="cancel-redact-btn">Cancel</button>
+          <button type="button" class="btn-gold-action" id="save-redact-btn">Save &amp; Attach</button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Manager Portal Modal -->
-    <div class="modal-overlay" id="manager-modal" style="display: none;">
-        <div class="modal-box">
-            <div class="modal-top">
-                <div>
-                    <h3>Property Manager Portal</h3>
-                    <p class="modal-subtitle">Claim your property profile to officially reply to student reviews.</p>
-                </div>
-                <button class="close-btn" id="close-manager-modal-btn" aria-label="Close modal">&times;</button>
-            </div>
+  <!-- Manager Official Reply Modal -->
+  <div class="modal" id="reply-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Official Management Reply</h3>
+        <button type="button" class="close-btn" id="close-reply-modal-btn">&times;</button>
+      </div>
+      <p id="reply-modal-subtitle" class="modal-desc"></p>
+      <form id="reply-form">
+        <input type="hidden" id="reply-review-id">
 
-            <form id="manager-form">
-                <div class="form-group">
-                    <label for="manager-prop">Property Name</label>
-                    <input type="text" id="manager-prop" placeholder="e.g., The Castilian" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="manager-email">Official Corporate Email</label>
-                    <input type="email" id="manager-email" placeholder="leasing@managementcorp.com" required>
-                    <small>Must match corporate property domain (no personal Gmail/Yahoo).</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="manager-role">Your Role</label>
-                    <select id="manager-role">
-                        <option value="onsite">On-Site Community Manager</option>
-                        <option value="leasing">Leasing Consultant</option>
-                        <option value="corporate">Regional Portfolio Director</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="manager-proof">Proof of Representation</label>
-                    <input type="file" id="manager-proof" accept=".pdf,image/*" required>
-                    <small>Management agreement page, corporate utility bill, or business card.</small>
-                </div>
-
-                <button type="submit" class="submit-btn">Request Property Claim</button>
-            </form>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reply-manager-email">Corporate Email</label>
+            <input type="email" id="reply-manager-email" placeholder="manager@complex.com" required>
+          </div>
+          <div class="form-group">
+            <label for="reply-access-code">Manager Access Code</label>
+            <input type="password" id="reply-access-code" placeholder="6-digit verification code" required>
+          </div>
         </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reply-manager-name">Your Name</label>
+            <input type="text" id="reply-manager-name" placeholder="e.g. Sarah Jenkins" required>
+          </div>
+          <div class="form-group">
+            <label for="reply-manager-title">Job Title</label>
+            <input type="text" id="reply-manager-title" placeholder="e.g. General Property Manager" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reply-text">Official Public Response</label>
+          <textarea id="reply-text" rows="4" placeholder="Address the tenant feedback professionally..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-gold-action">Publish Official Reply</button>
+      </form>
     </div>
+  </div>
 
-    <!-- Developer Footer -->
-    <footer class="site-footer">
-        <p>Built &amp; Engineered by <strong>Pamela Kyei Brewu </strong></p>
-        <div class="footer-links">
-            <a href="https://github.com/pkyeibrewu1" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <span>•</span>
-            <a href="https://linkedin.com/in/pkyeibrewu" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-            <span>•</span>
-            <a href="mailto:pamelakyei15@gmail.com">Contact</a>
+  <!-- Manager Property Claim Modal -->
+  <div class="modal" id="manager-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Claim Property Listing</h3>
+        <button type="button" class="close-btn" id="close-manager-modal-btn">&times;</button>
+      </div>
+      <p class="modal-desc">Register with a corporate email to earn the "Verified Management" badge and respond to resident reviews.</p>
+      <form id="manager-form">
+        <div class="form-group">
+          <label for="manager-prop">Property Name</label>
+          <input type="text" id="manager-prop" placeholder="e.g. One12 Courtland" required>
         </div>
-    </footer>
+        <div class="form-group">
+          <label for="manager-email">Corporate Email Address</label>
+          <input type="email" id="manager-email" placeholder="manager@one12courtland.com" required>
+        </div>
+        <div class="form-group">
+          <label for="manager-role">Role at Property</label>
+          <select id="manager-role">
+            <option value="Property Manager">Property Manager</option>
+            <option value="Assistant Manager">Assistant Manager</option>
+            <option value="Corporate Representative">Corporate Representative</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="manager-proof">Employment / Authorization Proof (Optional)</label>
+          <input type="file" id="manager-proof" accept="image/*">
+        </div>
+        <button type="submit" class="btn-gold-action">Submit Claim Request</button>
+      </form>
+    </div>
+  </div>
 
-    <script src="./app.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>

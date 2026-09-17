@@ -1,8 +1,9 @@
-// Automatically use localhost when testing locally, or your production URL when deployed
 const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:5000/api"
     : "https://rentworth.onrender.com/api";
+
 let reviews = [];
+let isEmailVerified = false;
 
 // Apartment dictionary with alias mapping
 let apartmentsList = [
@@ -58,7 +59,6 @@ let apartmentsList = [
     }
 ];
 
-// Fallback & dynamic university repository
 let allUniversities = [
     "Georgetown University",
     "George Washington University",
@@ -105,7 +105,7 @@ const reviewCount = document.getElementById("review-count");
 const viewTitle = document.getElementById("view-title");
 const navBestRated = document.getElementById("nav-best-rated");
 
-// Feed Filter Elements
+// Filters
 const filterSchoolSelect = document.getElementById("filter-school");
 const filterComplexSelect = document.getElementById("filter-complex");
 const filterRatingSelect = document.getElementById("filter-rating");
@@ -117,9 +117,16 @@ const openModalBtn = document.getElementById("open-modal-btn");
 const closeModalBtn = document.getElementById("close-modal-btn");
 const reviewForm = document.getElementById("review-form");
 
+// Email Verification Elements
+const studentEmailInput = document.getElementById("student-email");
+const sendOtpBtn = document.getElementById("send-otp-btn");
+const otpContainer = document.getElementById("otp-container");
+const otpInput = document.getElementById("email-otp-input");
+const verifyOtpBtn = document.getElementById("verify-otp-btn");
+const otpStatus = document.getElementById("otp-status");
+
 const modalComplexInput = document.getElementById("property-name");
 const modalComplexAutocompleteList = document.getElementById("modal-complex-autocomplete-list");
-
 const modalUniInput = document.getElementById("property-uni");
 const modalUniAutocompleteList = document.getElementById("modal-uni-autocomplete-list");
 
@@ -163,7 +170,7 @@ function getScoreColorClass(score) {
     return "score-red";
 }
 
-// 1. Fetch Reviews with Warm-up State
+// 1. Fetch Reviews
 async function fetchReviews() {
     reviewsStream.innerHTML = `
         <div style="text-align: center; padding: 45px 20px; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
@@ -188,7 +195,7 @@ async function fetchReviews() {
     }
 }
 
-// 2. Populate Dynamic Filter Dropdowns
+// 2. Populate Dropdowns
 function populateFilterDropdowns() {
     const currentSchool = filterSchoolSelect.value;
     const currentComplex = filterComplexSelect.value;
@@ -355,7 +362,71 @@ function renderReviews(items, filterLabel = "") {
     });
 }
 
-// 5. In-Browser Document Redactor Logic
+// 5. Student Email OTP Verification Flow
+sendOtpBtn.addEventListener("click", async () => {
+    const email = studentEmailInput.value.trim().toLowerCase();
+    if (!email || !email.endsWith(".edu")) {
+        alert("Please enter a valid university email address ending in .edu before requesting a code.");
+        return;
+    }
+
+    sendOtpBtn.disabled = true;
+    sendOtpBtn.textContent = "Sending...";
+    otpStatus.textContent = "";
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to send code");
+
+        otpContainer.style.display = "block";
+        otpStatus.style.color = "var(--accent-gold)";
+        otpStatus.textContent = data.devOtp 
+            ? `Dev mode code: ${data.devOtp}` 
+            : "Verification code sent to your .edu inbox. Please check your email.";
+    } catch (err) {
+        alert(err.message);
+    } finally {
+        sendOtpBtn.disabled = false;
+        sendOtpBtn.textContent = "Resend Code";
+    }
+});
+
+verifyOtpBtn.addEventListener("click", async () => {
+    const email = studentEmailInput.value.trim().toLowerCase();
+    const otp_code = otpInput.value.trim();
+
+    if (otp_code.length !== 6) {
+        alert("Please enter the 6-digit code received in your email.");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, otp_code })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Verification failed");
+
+        isEmailVerified = true;
+        studentEmailInput.readOnly = true;
+        studentEmailInput.style.borderColor = "#22C55E";
+        otpContainer.style.display = "none";
+        sendOtpBtn.style.display = "none";
+        alert("Student .edu email verified successfully!");
+    } catch (err) {
+        otpStatus.style.color = "var(--score-red)";
+        otpStatus.textContent = err.message;
+    }
+});
+
+// 6. Document Redactor Logic
 fileInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -487,7 +558,7 @@ saveRedactBtn.addEventListener("click", () => {
     }, "image/jpeg", 0.92);
 });
 
-// 6. University Autocomplete
+// 7. Autocomplete Engine
 function setupUniversityAutocomplete(inputElement, dropdownElement, onSelectCallback, allowAddCustom = false) {
     inputElement.addEventListener("input", (e) => {
         const rawQuery = e.target.value.trim();
@@ -560,7 +631,6 @@ function setupUniversityAutocomplete(inputElement, dropdownElement, onSelectCall
     });
 }
 
-// 7. Apartment Autocomplete
 function setupApartmentAutocomplete(inputElement, dropdownElement) {
     inputElement.addEventListener("input", (e) => {
         const rawQuery = e.target.value.trim();
@@ -625,7 +695,6 @@ function setupApartmentAutocomplete(inputElement, dropdownElement) {
     });
 }
 
-// Initialize Autocompletes
 setupUniversityAutocomplete(searchInput, searchAutocompleteList, (selectedUni) => {
     if ([...filterSchoolSelect.options].some(o => o.value === selectedUni)) {
         filterSchoolSelect.value = selectedUni;
@@ -636,7 +705,6 @@ setupUniversityAutocomplete(searchInput, searchAutocompleteList, (selectedUni) =
 setupUniversityAutocomplete(modalUniInput, modalUniAutocompleteList, null, true);
 setupApartmentAutocomplete(modalComplexInput, modalComplexAutocompleteList);
 
-// Hide dropdowns on outside click
 document.addEventListener("click", (e) => {
     if (!searchInput.contains(e.target) && !searchAutocompleteList.contains(e.target)) {
         searchAutocompleteList.style.display = "none";
@@ -649,7 +717,6 @@ document.addEventListener("click", (e) => {
     }
 });
 
-// Filter Bar Listeners
 filterSchoolSelect.addEventListener("change", applyAllFilters);
 filterComplexSelect.addEventListener("change", applyAllFilters);
 filterRatingSelect.addEventListener("change", applyAllFilters);
@@ -663,14 +730,12 @@ clearFiltersBtn.addEventListener("click", () => {
     applyAllFilters();
 });
 
-// Navbar Shortcut
 navBestRated.addEventListener("click", (e) => {
     e.preventDefault();
     filterRatingSelect.value = "4.5";
     applyAllFilters();
 });
 
-// Review Modal Handlers
 openModalBtn.addEventListener("click", () => {
     reviewModal.style.display = "flex";
 });
@@ -679,13 +744,18 @@ closeModalBtn.addEventListener("click", () => {
     reviewModal.style.display = "none";
 });
 
-// Form Submission
+// Review Submission (Guarded by OTP status check)
 reviewForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const email = document.getElementById("student-email").value.trim().toLowerCase();
+    const email = studentEmailInput.value.trim().toLowerCase();
     if (!email.endsWith(".edu")) {
         alert("Please enter a valid university email ending in .edu");
+        return;
+    }
+
+    if (!isEmailVerified) {
+        alert("Please verify your .edu email with the 6-digit confirmation PIN before submitting.");
         return;
     }
 
@@ -722,7 +792,6 @@ reviewForm.addEventListener("submit", async (e) => {
     formData.append("complex_name", finalComplexName);
     formData.append("university", finalUni);
     formData.append("student_email", email);
-    formData.append("room-type", document.getElementById("room-type").value.trim());
     formData.append("floorplan", document.getElementById("room-type").value.trim());
     formData.append("rent", document.getElementById("rent-amount").value);
     formData.append("rating", document.getElementById("rating-overall").value);
@@ -746,8 +815,13 @@ reviewForm.addEventListener("submit", async (e) => {
             throw new Error(errData.error || "Submission failed");
         }
 
-        alert("Review submitted with verified, redacted proof of tenancy!");
+        alert("Review verified and published successfully!");
         reviewForm.reset();
+        isEmailVerified = false;
+        studentEmailInput.readOnly = false;
+        studentEmailInput.style.borderColor = "";
+        sendOtpBtn.style.display = "block";
+        sendOtpBtn.textContent = "Send Code";
         finalRedactedBlob = null;
         baseImage = null;
         redactionBoxes = [];
@@ -761,7 +835,7 @@ reviewForm.addEventListener("submit", async (e) => {
     }
 });
 
-// Manager Response Modal Handlers
+// Manager Response Modal Opening
 window.openReplyModal = function(reviewId, complexName) {
     replyReviewIdInput.value = reviewId;
     replyModalSubtitle.textContent = `Official reply on behalf of ${complexName}`;
@@ -772,18 +846,27 @@ closeReplyModalBtn.addEventListener("click", () => {
     replyModal.style.display = "none";
 });
 
+// Manager Response Submission
 replyForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const reviewId = replyReviewIdInput.value;
     const responder_name = document.getElementById("reply-manager-name").value.trim();
     const responder_title = document.getElementById("reply-manager-title").value.trim();
     const response_text = document.getElementById("reply-text").value.trim();
+    const corporate_email = document.getElementById("reply-manager-email").value.trim();
+    const access_code = document.getElementById("reply-access-code").value.trim();
 
     try {
         const res = await fetch(`${API_BASE_URL}/reviews/${reviewId}/response`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ responder_name, responder_title, response_text })
+            body: JSON.stringify({ 
+                responder_name, 
+                responder_title, 
+                response_text,
+                corporate_email,
+                access_code
+            })
         });
 
         if (!res.ok) {
@@ -842,7 +925,7 @@ managerForm.addEventListener("submit", async (e) => {
     }
 });
 
-// Modal outside clicks
+// Modal outside click dismiss
 window.addEventListener("click", (e) => {
     if (e.target === reviewModal) reviewModal.style.display = "none";
     if (e.target === managerModal) managerModal.style.display = "none";
@@ -850,5 +933,4 @@ window.addEventListener("click", (e) => {
     if (e.target === replyModal) replyModal.style.display = "none";
 });
 
-// Initial Fetch
 fetchReviews();
