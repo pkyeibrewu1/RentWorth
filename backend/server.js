@@ -14,7 +14,7 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-// Store uploads in memory first so sharp can process before saving to disk
+// In-memory buffer storage so Sharp processes files before disk write
 const storage = multer.memoryStorage();
 const upload = multer({ 
     storage,
@@ -25,13 +25,13 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(uploadDir));
 
-// Helper to compress and write file safely
+// Image optimization & metadata stripping helper
 async function processAndSaveImage(buffer, originalname) {
     const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}.webp`;
     const outputPath = path.join(uploadDir, filename);
 
     await sharp(buffer)
-        .rotate() // Auto-orient based on EXIF
+        .rotate()
         .resize({ width: 1400, withoutEnlargement: true })
         .webp({ quality: 80 })
         .toFile(outputPath);
@@ -39,7 +39,12 @@ async function processAndSaveImage(buffer, originalname) {
     return filename;
 }
 
-// 1. GET /api/reviews
+// Health Check Endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'healthy', uptime: process.uptime() });
+});
+
+// GET /api/reviews
 app.get('/api/reviews', (req, res) => {
     const query = `
         SELECT 
@@ -55,7 +60,7 @@ app.get('/api/reviews', (req, res) => {
     });
 });
 
-// 2. POST /api/reviews
+// POST /api/reviews
 app.post('/api/reviews', upload.single('lease_proof'), async (req, res) => {
     try {
         const { complex_name, university, student_email, rating, floorplan, rent, tag, comment } = req.body;
@@ -87,7 +92,7 @@ app.post('/api/reviews', upload.single('lease_proof'), async (req, res) => {
     }
 });
 
-// 3. POST /api/reviews/:id/response
+// POST /api/reviews/:id/response
 app.post('/api/reviews/:id/response', (req, res) => {
     const reviewId = req.params.id;
     const { responder_name, responder_title, response_text } = req.body;
@@ -106,7 +111,7 @@ app.post('/api/reviews/:id/response', (req, res) => {
     });
 });
 
-// 4. POST /api/claims
+// POST /api/claims
 app.post('/api/claims', upload.single('proof'), async (req, res) => {
     try {
         const { property_name, corporate_email, role } = req.body;
@@ -133,7 +138,7 @@ app.post('/api/claims', upload.single('proof'), async (req, res) => {
     }
 });
 
-// 5. GET /api/admin/claims - View pending manager verification requests
+// GET /api/admin/claims
 app.get('/api/admin/claims', (req, res) => {
     const query = `SELECT * FROM manager_claims ORDER BY id DESC`;
     db.all(query, [], (err, rows) => {
@@ -142,7 +147,7 @@ app.get('/api/admin/claims', (req, res) => {
     });
 });
 
-// 6. PATCH /api/admin/claims/:id - Update claim status (approved/rejected)
+// PATCH /api/admin/claims/:id
 app.patch('/api/admin/claims/:id', (req, res) => {
     const { status } = req.body;
     if (!['approved', 'rejected', 'pending'].includes(status)) {
@@ -157,5 +162,5 @@ app.patch('/api/admin/claims/:id', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`RentWorth Backend running on http://localhost:${PORT}`);
+    console.log(`RentWorth Backend running on port ${PORT}`);
 });
