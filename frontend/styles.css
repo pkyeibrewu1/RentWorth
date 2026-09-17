@@ -96,7 +96,7 @@ body {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .nav-item {
@@ -105,6 +105,7 @@ body {
   font-size: 0.88rem;
   font-weight: 600;
   transition: color 0.15s ease;
+  cursor: pointer;
 }
 
 .nav-item:hover {
@@ -115,7 +116,7 @@ body {
   background-color: #FFFFFF;
   color: #0B0F17;
   border: none;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: var(--radius-sm);
   font-size: 0.84rem;
   font-weight: 700;
@@ -716,21 +717,19 @@ body {
   }
 
   .nav-links {
-    gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   .nav-item {
-    font-size: 0.8rem;
-  }
-
-  #nav-best-rated,
-  #nav-claim-btn {
-    display: none; /* Keep the header clean on small phones */
+    font-size: 0.82rem;
+    display: inline-block !important;
   }
 
   .btn-primary {
-    padding: 7px 11px;
-    font-size: 0.78rem;
+    padding: 7px 12px;
+    font-size: 0.8rem;
   }
 
   .hero-section {
