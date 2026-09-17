@@ -962,3 +962,108 @@ body {
     flex: 1;
   }
 }
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.site-footer {
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  padding: 36px 20px 28px;
+  margin-top: 40px;
+}
+
+.footer-container {
+  max-width: 1060px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-brand .brand-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.footer-tagline {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.footer-meta {
+  text-align: right;
+}
+
+.footer-credit {
+  font-size: 0.84rem;
+  color: var(--text-slate);
+}
+
+.creator-name {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.footer-copy {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.footer-copy a {
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.footer-copy a:hover {
+  color: var(--text-main);
+}
+
+/* ==========================================================================
+   About Modal
+   ========================================================================== */
+.about-card {
+  max-width: 520px;
+}
+
+.about-content p {
+  color: var(--text-slate);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.founder-signature {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+}
+
+.founder-signature strong {
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.founder-signature span {
+  font-size: 0.8rem;
+  color: var(--accent-gold);
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .footer-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .footer-meta {
+    text-align: left;
+  }
+}

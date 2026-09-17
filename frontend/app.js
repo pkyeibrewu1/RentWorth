@@ -135,6 +135,11 @@ const navClaimBtn = document.getElementById("nav-claim-btn");
 const closeManagerModalBtn = document.getElementById("close-manager-modal-btn");
 const managerForm = document.getElementById("manager-form");
 
+// About Modal Elements
+const aboutModal = document.getElementById("about-modal");
+const navAboutBtn = document.getElementById("nav-about-btn");
+const closeAboutModalBtn = document.getElementById("close-about-modal-btn");
+
 // Canvas Redactor DOM Elements
 const redactorModal = document.getElementById("redactor-modal");
 const redactionCanvas = document.getElementById("redaction-canvas");
@@ -749,6 +754,20 @@ if (navBestRated) {
 if (openModalBtn) openModalBtn.addEventListener("click", () => { if (reviewModal) reviewModal.style.display = "flex"; });
 if (closeModalBtn) closeModalBtn.addEventListener("click", () => { if (reviewModal) reviewModal.style.display = "none"; });
 
+// About Modal Handlers
+if (navAboutBtn) {
+    navAboutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (aboutModal) aboutModal.style.display = "flex";
+    });
+}
+
+if (closeAboutModalBtn) {
+    closeAboutModalBtn.addEventListener("click", () => {
+        if (aboutModal) aboutModal.style.display = "none";
+    });
+}
+
 // Review Submission
 if (reviewForm) {
     reviewForm.addEventListener("submit", async (e) => {
@@ -938,6 +957,7 @@ window.addEventListener("click", (e) => {
     if (e.target === managerModal) managerModal.style.display = "none";
     if (e.target === redactorModal) redactorModal.style.display = "none";
     if (e.target === replyModal) replyModal.style.display = "none";
+    if (e.target === aboutModal) aboutModal.style.display = "none";
 });
 
 fetchReviews();
