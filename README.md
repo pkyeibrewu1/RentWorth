@@ -1,61 +1,48 @@
 # RentWorth 🏢
 
-> A full-stack, privacy-first student housing transparency platform providing verified, landlord-proof rental reviews backed by authenticated tenancy proof and client-side PII redaction.
+> **See what they don't show you.** > A full-stack, privacy-centric student housing review platform featuring in-browser PII redaction and .edu-gated lease verification.
 
-[![Node.js](https://img.shields.io/badge/Node.js-v18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Express.js](https://img.shields.io/badge/Express.js-4.x-000000?logo=express&logoColor=white)](https://expressjs.com/)
-[![SQLite](https://img.shields.io/badge/SQLite-3.x-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![Sharp](https://img.shields.io/badge/Sharp-Image_Pipeline-99CC00)](https://sharp.pixelplumbing.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Live Site](https://img.shields.io/badge/Live_Site-rentworth.app-2ea44f?style=for-the-badge&logo=googlechrome&logoColor=white)](https://rentworth.app)
+[![API Status](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://rentworth.onrender.com/health)
+[![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Database](https://img.shields.io/badge/Database-SQLite3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 
 ---
 
-## 🌟 Key Features
+## 🌐 Live Product
+* **Production URL:** [https://rentworth.app](https://rentworth.app)
+* **Backend Health Check:** [https://rentworth.onrender.com/health](https://rentworth.onrender.com/health)
+* **Management Verification Portal:** [https://rentworth.app/html/admin.html](https://rentworth.app/html/admin.html)
 
-* **In-Browser Document Redaction:** Interactive HTML5 Canvas tool that allows students to black out private details (SSNs, account balances, legal names) prior to upload. Redaction masks are permanently rasterized client-side so unredacted PII never reaches the server.
-* **Automated Image Optimization Pipeline:** Server-side upload handler built with `Multer` and `Sharp` that strips EXIF camera/geolocation metadata, auto-orients, and converts lease proofs to lightweight WebP images.
-* **Intelligent Autocomplete & Alias Resolution:** Sub-millisecond lookup across 2,500+ US higher education institutions with real-time fuzzy matching and alias normalization (e.g., mapping colloquial nicknames like `"112"` → `"One12 Courtland"`).
-* **Dynamic College & Complex Expansion:** Allows students to add missing colleges or complexes directly within the review modal, instantly caching them for future searches.
-* **Multi-Parameter Feed Filtering:** Simultaneous client-side filtering across university, apartment complex, minimum star rating, and user-generated hashtags.
-* **Manager Claim & Response System:** Workflow allowing community directors to submit corporate identity proofs and publish badged, official clarifications under tenant reviews.
-* **Administrative Audit Portal (`admin.html`):** Internal dashboard to inspect submitted property manager credentials and approve or reject claim requests.
+---
+
+## 💡 Why RentWorth?
+Apartment listings typically display staged model units, curated marketing photos, and astroturfed testimonials. Crucial day-to-day realities—including recurring mold, persistent elevator outages, unexpected utility fees, and unresponsive management—are difficult for college students to detect before executing a legally binding lease.
+
+**RentWorth** bridges this information asymmetry by providing a platform for authentic tenant experiences while addressing the primary barrier to transparent reviews: **tenant privacy and verification validity**.
 
 ---
 
 ## 🛠️ Architecture & Tech Stack
-RentWorth/
-├── backend/
-│   ├── database.js          # SQLite relational schema & initialization
-│   ├── server.js            # Express API, Sharp processing & upload endpoints
-│   ├── rentworth.db         # Local SQLite persistent store (gitignored)
-│   └── uploads/             # Sanitized, compressed WebP proofs (gitignored)
-├── frontend/
-│   ├── html/
-│   │   ├── home.html        # Discovery stream & review submission modal
-│   │   └── admin.html       # Internal manager verification audit portal
-│   ├── styles.css           # Global dark-mode UI design system
-│   └── app.js               # Canvas redactor, autocompletes, filter engine
-├── .gitignore
-├── LICENSE
-└── README.md
 
-
-* **Frontend:** Vanilla JavaScript (ES6+), HTML5 Canvas API, CSS3 Custom Properties (Dark Theme)
-* **Backend:** Node.js, Express.js REST API, CORS, Multer (Memory Storage)
-* **Image Processing:** Sharp (WebP compression & EXIF scrubbing)
-* **Database:** SQLite3 (Foreign key cascades across reviews, claims, and responses)
+* **Frontend:** HTML5, CSS3, Modern Vanilla JavaScript, HTML5 Canvas API
+* **Backend:** Node.js, Express.js, Multer
+* **Image Sanitization:** Sharp (Metadata stripping, WebP compression)
+* **Data Storage:** SQLite3
+* **Infrastructure:** Render Web Services, Custom Domain via Spaceship
 
 ---
 
-## 🚀 Quickstart
+## 🔑 Key Engineering Implementations
 
-### Prerequisites
-* [Node.js](https://nodejs.org/) (v16 or higher)
-* [Git](https://git-scm.com/)
+1. **Client-Side Document Redactor (HTML5 Canvas):** Sensitive documents are rendered directly inside an HTML5 `<canvas>`. Users blackout legal names, SSNs, and unit numbers in the browser so PII never touches the server unredacted.
+2. **Backend EXIF Cleansing & WebP Pipeline:** Images are processed in-memory using the Sharp library to strip GPS/camera metadata and convert to optimized WebP.
+3. **University Email OTP Verification:** Reviews require confirming a 6-digit one-time passcode sent to a verified `.edu` address.
+4. **Canonical Aliasing & Filtering:** Search maps common colloquial nicknames (e.g., "112" to "One12 Courtland") and dynamically filters reviews.
+5. **Gated Manager Response System:** Property managers must be approved before they can post official management responses to reviews.
 
-### 1. Clone & Setup Backend
-```bash
-git clone [https://github.com/your-username/RentWorth.git](https://github.com/your-username/RentWorth.git)
-cd RentWorth/backend
-npm install
-node server.js
+---
+
+## 👤 Author
+**Pamela Kyei Brewu** * Website: [rentworth.app](https://rentworth.app)  
+* GitHub: [@pkyeibrewu1](https://github.com/pkyeibrewu1)
