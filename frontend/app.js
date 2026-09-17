@@ -1,8 +1,7 @@
 // Automatically use localhost when testing locally, or your production URL when deployed
 const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:5000/api"
-    : "https://rentworth-api.onrender.com/api";
-
+    : "https://rentworth.onrender.com/api";
 let reviews = [];
 
 // Apartment dictionary with alias mapping
