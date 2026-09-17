@@ -138,7 +138,7 @@ const managerForm = document.getElementById("manager-form");
 // Canvas Redactor DOM Elements
 const redactorModal = document.getElementById("redactor-modal");
 const redactionCanvas = document.getElementById("redaction-canvas");
-const ctx = redactionCanvas.getContext("2d");
+const ctx = redactionCanvas ? redactionCanvas.getContext("2d") : null;
 const fileInput = document.getElementById("lease-proof");
 const uploadStatusText = document.getElementById("upload-status-text");
 const redactionBadgeContainer = document.getElementById("redaction-badge-container");
@@ -172,6 +172,7 @@ function getScoreColorClass(score) {
 
 // 1. Fetch Reviews
 async function fetchReviews() {
+    if (!reviewsStream) return;
     reviewsStream.innerHTML = `
         <div style="text-align: center; padding: 45px 20px; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
             <p style="color: var(--accent-gold); font-weight: 700; margin-bottom: 6px;">Loading verified reviews...</p>
@@ -197,6 +198,8 @@ async function fetchReviews() {
 
 // 2. Populate Dropdowns
 function populateFilterDropdowns() {
+    if (!filterSchoolSelect || !filterComplexSelect) return;
+
     const currentSchool = filterSchoolSelect.value;
     const currentComplex = filterComplexSelect.value;
 
@@ -223,10 +226,10 @@ function populateFilterDropdowns() {
 
 // 3. Filter Engine
 function applyAllFilters() {
-    const searchQuery = searchInput.value.toLowerCase().trim();
-    const selectedSchool = filterSchoolSelect.value;
-    const selectedComplex = filterComplexSelect.value;
-    const selectedRating = filterRatingSelect.value;
+    const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : "";
+    const selectedSchool = filterSchoolSelect ? filterSchoolSelect.value : "all";
+    const selectedComplex = filterComplexSelect ? filterComplexSelect.value : "all";
+    const selectedRating = filterRatingSelect ? filterRatingSelect.value : "all";
 
     const matchedApartment = apartmentsList.find(apt =>
         apt.canonicalName.toLowerCase().includes(searchQuery) || 
@@ -277,7 +280,7 @@ function applyAllFilters() {
     } else if (selectedComplex !== "all") {
         titleLabel = `Reviews for ${selectedComplex}`;
     } else if (searchQuery) {
-        titleLabel = `Reviews matching "${searchInput.value.trim()}"`;
+        titleLabel = `Reviews matching "${searchQuery}"`;
     }
 
     renderReviews(filtered, titleLabel);
@@ -285,9 +288,10 @@ function applyAllFilters() {
 
 // 4. Render Reviews Feed
 function renderReviews(items, filterLabel = "") {
+    if (!reviewsStream) return;
     reviewsStream.innerHTML = "";
-    viewTitle.textContent = filterLabel || "Recent Verified Tenant Reviews";
-    reviewCount.textContent = `Showing ${items.length} ${items.length === 1 ? "verified review" : "verified reviews"}`;
+    if (viewTitle) viewTitle.textContent = filterLabel || "Recent Verified Tenant Reviews";
+    if (reviewCount) reviewCount.textContent = `Showing ${items.length} ${items.length === 1 ? "verified review" : "verified reviews"}`;
 
     if (items.length === 0) {
         reviewsStream.innerHTML = `
@@ -363,89 +367,102 @@ function renderReviews(items, filterLabel = "") {
 }
 
 // 5. Student Email OTP Verification Flow
-sendOtpBtn.addEventListener("click", async () => {
-    const email = studentEmailInput.value.trim().toLowerCase();
-    if (!email || !email.endsWith(".edu")) {
-        alert("Please enter a valid university email address ending in .edu before requesting a code.");
-        return;
-    }
+if (sendOtpBtn) {
+    sendOtpBtn.addEventListener("click", async () => {
+        const email = studentEmailInput ? studentEmailInput.value.trim().toLowerCase() : "";
+        if (!email || !email.endsWith(".edu")) {
+            alert("Please enter a valid university email address ending in .edu before requesting a code.");
+            return;
+        }
 
-    sendOtpBtn.disabled = true;
-    sendOtpBtn.textContent = "Sending...";
-    otpStatus.textContent = "";
+        sendOtpBtn.disabled = true;
+        sendOtpBtn.textContent = "Sending...";
+        if (otpStatus) otpStatus.textContent = "";
 
-    try {
-        const res = await fetch(`${API_BASE_URL}/auth/send-otp`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to send code");
+        try {
+            const res = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to send code");
 
-        otpContainer.style.display = "block";
-        otpStatus.style.color = "var(--accent-gold)";
-        otpStatus.textContent = data.devOtp 
-            ? `Dev mode code: ${data.devOtp}` 
-            : "Verification code sent to your .edu inbox. Please check your email.";
-    } catch (err) {
-        alert(err.message);
-    } finally {
-        sendOtpBtn.disabled = false;
-        sendOtpBtn.textContent = "Resend Code";
-    }
-});
+            if (otpContainer) otpContainer.style.display = "block";
+            if (otpStatus) {
+                otpStatus.style.color = "var(--accent-gold)";
+                otpStatus.textContent = data.devOtp 
+                    ? `Dev mode code: ${data.devOtp}` 
+                    : "Verification code sent to your .edu inbox. Please check your email.";
+            }
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            sendOtpBtn.disabled = false;
+            sendOtpBtn.textContent = "Resend Code";
+        }
+    });
+}
 
-verifyOtpBtn.addEventListener("click", async () => {
-    const email = studentEmailInput.value.trim().toLowerCase();
-    const otp_code = otpInput.value.trim();
+if (verifyOtpBtn) {
+    verifyOtpBtn.addEventListener("click", async () => {
+        const email = studentEmailInput ? studentEmailInput.value.trim().toLowerCase() : "";
+        const otp_code = otpInput ? otpInput.value.trim() : "";
 
-    if (otp_code.length !== 6) {
-        alert("Please enter the 6-digit code received in your email.");
-        return;
-    }
+        if (otp_code.length !== 6) {
+            alert("Please enter the 6-digit code received in your email.");
+            return;
+        }
 
-    try {
-        const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, otp_code })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Verification failed");
+        try {
+            const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp_code })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Verification failed");
 
-        isEmailVerified = true;
-        studentEmailInput.readOnly = true;
-        studentEmailInput.style.borderColor = "#22C55E";
-        otpContainer.style.display = "none";
-        sendOtpBtn.style.display = "none";
-        alert("Student .edu email verified successfully!");
-    } catch (err) {
-        otpStatus.style.color = "var(--score-red)";
-        otpStatus.textContent = err.message;
-    }
-});
+            isEmailVerified = true;
+            if (studentEmailInput) {
+                studentEmailInput.readOnly = true;
+                studentEmailInput.style.borderColor = "#22C55E";
+            }
+            if (otpContainer) otpContainer.style.display = "none";
+            if (sendOtpBtn) sendOtpBtn.style.display = "none";
+            alert("Student .edu email verified successfully!");
+        } catch (err) {
+            if (otpStatus) {
+                otpStatus.style.color = "var(--score-red)";
+                otpStatus.textContent = err.message;
+            }
+        }
+    });
+}
 
 // 6. Document Redactor Logic
-fileInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+if (fileInput) {
+    fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-            baseImage = img;
-            redactionBoxes = [];
-            setupCanvas(img);
-            redactorModal.style.display = "flex";
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                baseImage = img;
+                redactionBoxes = [];
+                setupCanvas(img);
+                if (redactorModal) redactorModal.style.display = "flex";
+            };
+            img.src = event.target.result;
         };
-        img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
-});
+        reader.readAsDataURL(file);
+    });
+}
 
 function setupCanvas(img) {
+    if (!redactionCanvas) return;
     let width = img.naturalWidth;
     let height = img.naturalHeight;
     const maxDimension = 1200;
@@ -466,7 +483,7 @@ function setupCanvas(img) {
 }
 
 function redrawCanvas() {
-    if (!baseImage) return;
+    if (!baseImage || !ctx || !redactionCanvas) return;
     ctx.clearRect(0, 0, redactionCanvas.width, redactionCanvas.height);
     ctx.drawImage(baseImage, 0, 0, redactionCanvas.width, redactionCanvas.height);
 
@@ -486,80 +503,68 @@ function getCanvasCoords(e) {
     };
 }
 
-redactionCanvas.addEventListener("mousedown", (e) => {
-    isDrawing = true;
-    const coords = getCanvasCoords(e);
-    startX = coords.x;
-    startY = coords.y;
-});
+if (redactionCanvas) {
+    redactionCanvas.addEventListener("mousedown", (e) => {
+        isDrawing = true;
+        const coords = getCanvasCoords(e);
+        startX = coords.x;
+        startY = coords.y;
+    });
 
-redactionCanvas.addEventListener("mousemove", (e) => {
-    if (!isDrawing) return;
-    const coords = getCanvasCoords(e);
-    redrawCanvas();
+    redactionCanvas.addEventListener("mousemove", (e) => {
+        if (!isDrawing) return;
+        const coords = getCanvasCoords(e);
+        redrawCanvas();
 
-    ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-    ctx.strokeStyle = "#FBBF24";
-    ctx.lineWidth = 2;
-    const w = coords.x - startX;
-    const h = coords.y - startY;
-    ctx.fillRect(startX, startY, w, h);
-    ctx.strokeRect(startX, startY, w, h);
-});
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.strokeStyle = "#FBBF24";
+        ctx.lineWidth = 2;
+        const w = coords.x - startX;
+        const h = coords.y - startY;
+        ctx.fillRect(startX, startY, w, h);
+        ctx.strokeRect(startX, startY, w, h);
+    });
 
-redactionCanvas.addEventListener("mouseup", (e) => {
-    if (!isDrawing) return;
-    isDrawing = false;
-    const coords = getCanvasCoords(e);
-    const w = coords.x - startX;
-    const h = coords.y - startY;
+    redactionCanvas.addEventListener("mouseup", (e) => {
+        if (!isDrawing) return;
+        isDrawing = false;
+        const coords = getCanvasCoords(e);
+        const w = coords.x - startX;
+        const h = coords.y - startY;
 
-    if (Math.abs(w) > 4 && Math.abs(h) > 4) {
-        redactionBoxes.push({
-            x: w < 0 ? startX + w : startX,
-            y: h < 0 ? startY + h : startY,
-            w: Math.abs(w),
-            h: Math.abs(h)
-        });
-    }
-    redrawCanvas();
-});
+        if (Math.abs(w) > 4 && Math.abs(h) > 4) {
+            redactionBoxes.push({
+                x: w < 0 ? startX + w : startX,
+                y: h < 0 ? startY + h : startY,
+                w: Math.abs(w),
+                h: Math.abs(h)
+            });
+        }
+        redrawCanvas();
+    });
+}
 
-undoRedactBtn.addEventListener("click", () => {
-    redactionBoxes.pop();
-    redrawCanvas();
-});
+if (undoRedactBtn) undoRedactBtn.addEventListener("click", () => { redactionBoxes.pop(); redrawCanvas(); });
+if (clearRedactBtn) clearRedactBtn.addEventListener("click", () => { redactionBoxes = []; redrawCanvas(); });
+if (reEditBtn) reEditBtn.addEventListener("click", () => { if (redactorModal) redactorModal.style.display = "flex"; redrawCanvas(); });
+if (closeRedactorBtn) closeRedactorBtn.addEventListener("click", () => { if (redactorModal) redactorModal.style.display = "none"; });
+if (cancelRedactBtn) cancelRedactBtn.addEventListener("click", () => { if (redactorModal) redactorModal.style.display = "none"; });
 
-clearRedactBtn.addEventListener("click", () => {
-    redactionBoxes = [];
-    redrawCanvas();
-});
-
-reEditBtn.addEventListener("click", () => {
-    redactorModal.style.display = "flex";
-    redrawCanvas();
-});
-
-closeRedactorBtn.addEventListener("click", () => {
-    redactorModal.style.display = "none";
-});
-
-cancelRedactBtn.addEventListener("click", () => {
-    redactorModal.style.display = "none";
-});
-
-saveRedactBtn.addEventListener("click", () => {
-    redrawCanvas();
-    redactionCanvas.toBlob((blob) => {
-        finalRedactedBlob = blob;
-        uploadStatusText.textContent = "✓ Image redacted & secured";
-        redactionBadgeContainer.style.display = "block";
-        redactorModal.style.display = "none";
-    }, "image/jpeg", 0.92);
-});
+if (saveRedactBtn && redactionCanvas) {
+    saveRedactBtn.addEventListener("click", () => {
+        redrawCanvas();
+        redactionCanvas.toBlob((blob) => {
+            finalRedactedBlob = blob;
+            if (uploadStatusText) uploadStatusText.textContent = "✓ Image redacted & secured";
+            if (redactionBadgeContainer) redactionBadgeContainer.style.display = "block";
+            if (redactorModal) redactorModal.style.display = "none";
+        }, "image/jpeg", 0.92);
+    });
+}
 
 // 7. Autocomplete Engine
 function setupUniversityAutocomplete(inputElement, dropdownElement, onSelectCallback, allowAddCustom = false) {
+    if (!inputElement || !dropdownElement) return;
     inputElement.addEventListener("input", (e) => {
         const rawQuery = e.target.value.trim();
         const query = rawQuery.toLowerCase();
@@ -632,6 +637,7 @@ function setupUniversityAutocomplete(inputElement, dropdownElement, onSelectCall
 }
 
 function setupApartmentAutocomplete(inputElement, dropdownElement) {
+    if (!inputElement || !dropdownElement) return;
     inputElement.addEventListener("input", (e) => {
         const rawQuery = e.target.value.trim();
         const query = rawQuery.toLowerCase();
@@ -666,7 +672,7 @@ function setupApartmentAutocomplete(inputElement, dropdownElement) {
 
             item.addEventListener("click", () => {
                 inputElement.value = apt.canonicalName;
-                if (!modalUniInput.value.trim()) {
+                if (modalUniInput && !modalUniInput.value.trim()) {
                     modalUniInput.value = apt.defaultUniversity;
                 }
                 dropdownElement.innerHTML = "";
@@ -696,7 +702,7 @@ function setupApartmentAutocomplete(inputElement, dropdownElement) {
 }
 
 setupUniversityAutocomplete(searchInput, searchAutocompleteList, (selectedUni) => {
-    if ([...filterSchoolSelect.options].some(o => o.value === selectedUni)) {
+    if (filterSchoolSelect && [...filterSchoolSelect.options].some(o => o.value === selectedUni)) {
         filterSchoolSelect.value = selectedUni;
     }
     applyAllFilters();
@@ -706,224 +712,225 @@ setupUniversityAutocomplete(modalUniInput, modalUniAutocompleteList, null, true)
 setupApartmentAutocomplete(modalComplexInput, modalComplexAutocompleteList);
 
 document.addEventListener("click", (e) => {
-    if (!searchInput.contains(e.target) && !searchAutocompleteList.contains(e.target)) {
+    if (searchInput && searchAutocompleteList && !searchInput.contains(e.target) && !searchAutocompleteList.contains(e.target)) {
         searchAutocompleteList.style.display = "none";
     }
-    if (!modalUniInput.contains(e.target) && !modalUniAutocompleteList.contains(e.target)) {
+    if (modalUniInput && modalUniAutocompleteList && !modalUniInput.contains(e.target) && !modalUniAutocompleteList.contains(e.target)) {
         modalUniAutocompleteList.style.display = "none";
     }
-    if (!modalComplexInput.contains(e.target) && !modalComplexAutocompleteList.contains(e.target)) {
+    if (modalComplexInput && modalComplexAutocompleteList && !modalComplexInput.contains(e.target) && !modalComplexAutocompleteList.contains(e.target)) {
         modalComplexAutocompleteList.style.display = "none";
     }
 });
 
-filterSchoolSelect.addEventListener("change", applyAllFilters);
-filterComplexSelect.addEventListener("change", applyAllFilters);
-filterRatingSelect.addEventListener("change", applyAllFilters);
-searchInput.addEventListener("input", applyAllFilters);
+if (filterSchoolSelect) filterSchoolSelect.addEventListener("change", applyAllFilters);
+if (filterComplexSelect) filterComplexSelect.addEventListener("change", applyAllFilters);
+if (filterRatingSelect) filterRatingSelect.addEventListener("change", applyAllFilters);
+if (searchInput) searchInput.addEventListener("input", applyAllFilters);
 
-clearFiltersBtn.addEventListener("click", () => {
-    searchInput.value = "";
-    filterSchoolSelect.value = "all";
-    filterComplexSelect.value = "all";
-    filterRatingSelect.value = "all";
-    applyAllFilters();
-});
+if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener("click", () => {
+        if (searchInput) searchInput.value = "";
+        if (filterSchoolSelect) filterSchoolSelect.value = "all";
+        if (filterComplexSelect) filterComplexSelect.value = "all";
+        if (filterRatingSelect) filterRatingSelect.value = "all";
+        applyAllFilters();
+    });
+}
 
-navBestRated.addEventListener("click", (e) => {
-    e.preventDefault();
-    filterRatingSelect.value = "4.5";
-    applyAllFilters();
-});
+if (navBestRated) {
+    navBestRated.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (filterRatingSelect) filterRatingSelect.value = "4.5";
+        applyAllFilters();
+    });
+}
 
-openModalBtn.addEventListener("click", () => {
-    reviewModal.style.display = "flex";
-});
+if (openModalBtn) openModalBtn.addEventListener("click", () => { if (reviewModal) reviewModal.style.display = "flex"; });
+if (closeModalBtn) closeModalBtn.addEventListener("click", () => { if (reviewModal) reviewModal.style.display = "none"; });
 
-closeModalBtn.addEventListener("click", () => {
-    reviewModal.style.display = "none";
-});
+// Review Submission
+if (reviewForm) {
+    reviewForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-// Review Submission (Guarded by OTP status check)
-reviewForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const email = studentEmailInput.value.trim().toLowerCase();
-    if (!email.endsWith(".edu")) {
-        alert("Please enter a valid university email ending in .edu");
-        return;
-    }
-
-    if (!isEmailVerified) {
-        alert("Please verify your .edu email with the 6-digit confirmation PIN before submitting.");
-        return;
-    }
-
-    if (!finalRedactedBlob && (!fileInput.files || fileInput.files.length === 0)) {
-        alert("Please upload your lease proof or resident portal screenshot.");
-        return;
-    }
-
-    let finalComplexName = modalComplexInput.value.trim();
-    const matchedApt = apartmentsList.find(apt => 
-        apt.canonicalName.toLowerCase() === finalComplexName.toLowerCase() ||
-        (apt.aliases && apt.aliases.includes(finalComplexName.toLowerCase()))
-    );
-    if (matchedApt) {
-        finalComplexName = matchedApt.canonicalName;
-    } else {
-        apartmentsList.push({
-            canonicalName: finalComplexName,
-            defaultUniversity: modalUniInput.value.trim(),
-            aliases: []
-        });
-    }
-
-    let rawTag = document.getElementById("form-tag").value.trim();
-    rawTag = rawTag.replace(/^#+/, '').replace(/\s+/g, '');
-    if (!rawTag) rawTag = "VerifiedLiving";
-
-    const finalUni = modalUniInput.value.trim();
-    if (!allUniversities.includes(finalUni)) {
-        allUniversities.unshift(finalUni);
-    }
-
-    const formData = new FormData();
-    formData.append("complex_name", finalComplexName);
-    formData.append("university", finalUni);
-    formData.append("student_email", email);
-    formData.append("floorplan", document.getElementById("room-type").value.trim());
-    formData.append("rent", document.getElementById("rent-amount").value);
-    formData.append("rating", document.getElementById("rating-overall").value);
-    formData.append("tag", rawTag);
-    formData.append("comment", document.getElementById("review-text").value.trim());
-
-    if (finalRedactedBlob) {
-        formData.append("lease_proof", finalRedactedBlob, "redacted_lease.jpg");
-    } else {
-        formData.append("lease_proof", fileInput.files[0]);
-    }
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/reviews`, {
-            method: "POST",
-            body: formData
-        });
-
-        if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(errData.error || "Submission failed");
+        const email = studentEmailInput ? studentEmailInput.value.trim().toLowerCase() : "";
+        if (!email.endsWith(".edu")) {
+            alert("Please enter a valid university email ending in .edu");
+            return;
         }
 
-        alert("Review verified and published successfully!");
-        reviewForm.reset();
-        isEmailVerified = false;
-        studentEmailInput.readOnly = false;
-        studentEmailInput.style.borderColor = "";
-        sendOtpBtn.style.display = "block";
-        sendOtpBtn.textContent = "Send Code";
-        finalRedactedBlob = null;
-        baseImage = null;
-        redactionBoxes = [];
-        uploadStatusText.textContent = "Click or drag lease screenshot to redact & attach";
-        redactionBadgeContainer.style.display = "none";
-        reviewModal.style.display = "none";
-        fetchReviews();
-    } catch (err) {
-        console.error(err);
-        alert(`Error submitting review: ${err.message}`);
-    }
-});
+        if (!isEmailVerified) {
+            alert("Please verify your .edu email with the 6-digit confirmation PIN before submitting.");
+            return;
+        }
+
+        if (!finalRedactedBlob && (!fileInput || !fileInput.files || fileInput.files.length === 0)) {
+            alert("Please upload your lease proof or resident portal screenshot.");
+            return;
+        }
+
+        let finalComplexName = modalComplexInput ? modalComplexInput.value.trim() : "";
+        const matchedApt = apartmentsList.find(apt => 
+            apt.canonicalName.toLowerCase() === finalComplexName.toLowerCase() ||
+            (apt.aliases && apt.aliases.includes(finalComplexName.toLowerCase()))
+        );
+        if (matchedApt) {
+            finalComplexName = matchedApt.canonicalName;
+        } else {
+            apartmentsList.push({
+                canonicalName: finalComplexName,
+                defaultUniversity: modalUniInput ? modalUniInput.value.trim() : "",
+                aliases: []
+            });
+        }
+
+        let rawTag = document.getElementById("form-tag")?.value.trim() || "";
+        rawTag = rawTag.replace(/^#+/, '').replace(/\s+/g, '');
+        if (!rawTag) rawTag = "VerifiedLiving";
+
+        const finalUni = modalUniInput ? modalUniInput.value.trim() : "";
+        if (finalUni && !allUniversities.includes(finalUni)) {
+            allUniversities.unshift(finalUni);
+        }
+
+        const formData = new FormData();
+        formData.append("complex_name", finalComplexName);
+        formData.append("university", finalUni);
+        formData.append("student_email", email);
+        formData.append("floorplan", document.getElementById("room-type")?.value.trim() || "");
+        formData.append("rent", document.getElementById("rent-amount")?.value || "0");
+        formData.append("rating", document.getElementById("rating-overall")?.value || "5.0");
+        formData.append("tag", rawTag);
+        formData.append("comment", document.getElementById("review-text")?.value.trim() || "");
+
+        if (finalRedactedBlob) {
+            formData.append("lease_proof", finalRedactedBlob, "redacted_lease.jpg");
+        } else if (fileInput && fileInput.files[0]) {
+            formData.append("lease_proof", fileInput.files[0]);
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/reviews`, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || "Submission failed");
+            }
+
+            alert("Review verified and published successfully!");
+            reviewForm.reset();
+            isEmailVerified = false;
+            if (studentEmailInput) {
+                studentEmailInput.readOnly = false;
+                studentEmailInput.style.borderColor = "";
+            }
+            if (sendOtpBtn) {
+                sendOtpBtn.style.display = "block";
+                sendOtpBtn.textContent = "Send Code";
+            }
+            finalRedactedBlob = null;
+            baseImage = null;
+            redactionBoxes = [];
+            if (uploadStatusText) uploadStatusText.textContent = "Click or drag lease screenshot to redact & attach";
+            if (redactionBadgeContainer) redactionBadgeContainer.style.display = "none";
+            if (reviewModal) reviewModal.style.display = "none";
+            fetchReviews();
+        } catch (err) {
+            console.error(err);
+            alert(`Error submitting review: ${err.message}`);
+        }
+    });
+}
 
 // Manager Response Modal Opening
 window.openReplyModal = function(reviewId, complexName) {
-    replyReviewIdInput.value = reviewId;
-    replyModalSubtitle.textContent = `Official reply on behalf of ${complexName}`;
-    replyModal.style.display = "flex";
+    if (replyReviewIdInput) replyReviewIdInput.value = reviewId;
+    if (replyModalSubtitle) replyModalSubtitle.textContent = `Official reply on behalf of ${complexName}`;
+    if (replyModal) replyModal.style.display = "flex";
 };
 
-closeReplyModalBtn.addEventListener("click", () => {
-    replyModal.style.display = "none";
-});
+if (closeReplyModalBtn) closeReplyModalBtn.addEventListener("click", () => { if (replyModal) replyModal.style.display = "none"; });
 
 // Manager Response Submission
-replyForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const reviewId = replyReviewIdInput.value;
-    const responder_name = document.getElementById("reply-manager-name").value.trim();
-    const responder_title = document.getElementById("reply-manager-title").value.trim();
-    const response_text = document.getElementById("reply-text").value.trim();
-    const corporate_email = document.getElementById("reply-manager-email").value.trim();
-    const access_code = document.getElementById("reply-access-code").value.trim();
+if (replyForm) {
+    replyForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const reviewId = replyReviewIdInput ? replyReviewIdInput.value : "";
+        const responder_name = document.getElementById("reply-manager-name")?.value.trim() || "";
+        const responder_title = document.getElementById("reply-manager-title")?.value.trim() || "";
+        const response_text = document.getElementById("reply-text")?.value.trim() || "";
+        const corporate_email = document.getElementById("reply-manager-email")?.value.trim() || "";
+        const access_code = document.getElementById("reply-access-code")?.value.trim() || "";
 
-    try {
-        const res = await fetch(`${API_BASE_URL}/reviews/${reviewId}/response`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                responder_name, 
-                responder_title, 
-                response_text,
-                corporate_email,
-                access_code
-            })
-        });
+        try {
+            const res = await fetch(`${API_BASE_URL}/reviews/${reviewId}/response`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    responder_name, 
+                    responder_title, 
+                    response_text,
+                    corporate_email,
+                    access_code
+                })
+            });
 
-        if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.error || "Failed to submit response");
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || "Failed to submit response");
+            }
+
+            alert("Official response published successfully!");
+            replyForm.reset();
+            if (replyModal) replyModal.style.display = "none";
+            fetchReviews();
+        } catch (err) {
+            alert(err.message);
         }
-
-        alert("Official response published successfully!");
-        replyForm.reset();
-        replyModal.style.display = "none";
-        fetchReviews();
-    } catch (err) {
-        alert(err.message);
-    }
-});
+    });
+}
 
 // Manager Claim Handlers
-navClaimBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    managerModal.style.display = "flex";
-});
+if (navClaimBtn) navClaimBtn.addEventListener("click", (e) => { e.preventDefault(); if (managerModal) managerModal.style.display = "flex"; });
+if (closeManagerModalBtn) closeManagerModalBtn.addEventListener("click", () => { if (managerModal) managerModal.style.display = "none"; });
 
-closeManagerModalBtn.addEventListener("click", () => {
-    managerModal.style.display = "none";
-});
+if (managerForm) {
+    managerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-managerForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const proofInput = document.getElementById("manager-proof");
-    const formData = new FormData();
-    formData.append("property_name", document.getElementById("manager-prop").value.trim());
-    formData.append("corporate_email", document.getElementById("manager-email").value.trim());
-    formData.append("role", document.getElementById("manager-role").value);
-    if (proofInput.files.length > 0) {
-        formData.append("proof", proofInput.files[0]);
-    }
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/claims`, {
-            method: "POST",
-            body: formData
-        });
-
-        if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(errData.error || "Claim failed");
+        const proofInput = document.getElementById("manager-proof");
+        const formData = new FormData();
+        formData.append("property_name", document.getElementById("manager-prop")?.value.trim() || "");
+        formData.append("corporate_email", document.getElementById("manager-email")?.value.trim() || "");
+        formData.append("role", document.getElementById("manager-role")?.value || "");
+        if (proofInput && proofInput.files.length > 0) {
+            formData.append("proof", proofInput.files[0]);
         }
 
-        alert("Claim request received. Corporate credentials will be reviewed within 24 hours.");
-        managerForm.reset();
-        managerModal.style.display = "none";
-    } catch (err) {
-        console.error(err);
-        alert(`Error submitting claim: ${err.message}`);
-    }
-});
+        try {
+            const response = await fetch(`${API_BASE_URL}/claims`, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || "Claim failed");
+            }
+
+            alert("Claim request received. Corporate credentials will be reviewed within 24 hours.");
+            managerForm.reset();
+            if (managerModal) managerModal.style.display = "none";
+        } catch (err) {
+            console.error(err);
+            alert(`Error submitting claim: ${err.message}`);
+        }
+    });
+}
 
 // Modal outside click dismiss
 window.addEventListener("click", (e) => {
