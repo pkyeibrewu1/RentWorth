@@ -301,6 +301,9 @@
       </form>
       <div class="manager-status" id="manager-status" role="status" aria-live="polite" hidden>
         <p id="manager-status-message"></p>
+        <p class="manager-status-contact" id="manager-status-contact" hidden>
+          Need help? Email <a href="mailto:support@rentworth.app">support@rentworth.app</a>.
+        </p>
         <div class="manager-status-actions" id="manager-status-actions" hidden>
           <button type="button" class="btn-secondary" id="manager-status-dismiss">Done</button>
         </div>
@@ -336,10 +339,42 @@
       </div>
       <div class="footer-meta">
         <p class="footer-credit">Built by <span class="creator-name">Pamela Kyei Brewu</span></p>
-        <p class="footer-copy">© 2026 RentWorth · <a href="#">Privacy</a> · <a href="#">Terms</a></p>
+        <p class="footer-copy">© 2026 RentWorth · <a href="mailto:support@rentworth.app">Support</a> · <a href="#">Privacy</a> · <a href="#">Terms</a></p>
       </div>
     </div>
   </footer>
+
+  <div class="manager-announcement" id="manager-announcement" role="status" aria-live="polite" hidden>
+    <div class="manager-announcement-copy">
+      <strong id="manager-announcement-title">Claim request received</strong>
+      <p id="manager-announcement-message"></p>
+      <p>Questions or issues? Email <a href="mailto:support@rentworth.app">support@rentworth.app</a>.</p>
+    </div>
+    <button type="button" class="close-btn manager-announcement-close" id="manager-announcement-close" aria-label="Close claim confirmation">&times;</button>
+  </div>
+
+  <div class="assistant-widget">
+    <section class="assistant-panel" id="assistant-panel" role="dialog" aria-label="RentWorth AI assistant" hidden>
+      <header class="assistant-header">
+        <div>
+          <h2>Ask RentWorth AI</h2>
+          <p>Questions about renting or using RentWorth?</p>
+        </div>
+        <button type="button" class="close-btn" id="assistant-close" aria-label="Close AI assistant">&times;</button>
+      </header>
+      <div class="assistant-transcript" id="assistant-transcript" role="log" aria-live="polite" aria-relevant="additions">
+        <div class="assistant-message assistant-message-model">Hi! I can help you think through rental questions or find your way around RentWorth. For claim or account help, email support@rentworth.app.</div>
+      </div>
+      <p class="assistant-disclosure">Gemini-generated answers may be wrong. Don’t share passwords, financial details, or private documents.</p>
+      <form class="assistant-form" id="assistant-form">
+        <label class="sr-only" for="assistant-input">Your question</label>
+        <textarea id="assistant-input" rows="2" maxlength="1000" placeholder="Type your question..." required></textarea>
+        <button type="submit" class="btn-primary" id="assistant-send">Send</button>
+      </form>
+    </section>
+    <button type="button" class="assistant-launcher" id="assistant-launcher" aria-controls="assistant-panel" aria-expanded="false">Ask RentWorth AI</button>
+  </div>
+
   <script src="./app.js"></script>
 </body>
 </html>

@@ -138,8 +138,21 @@ const managerModalTitle = document.getElementById("manager-modal-title");
 const managerModalDescription = document.getElementById("manager-modal-desc");
 const managerStatus = document.getElementById("manager-status");
 const managerStatusMessage = document.getElementById("manager-status-message");
+const managerStatusContact = document.getElementById("manager-status-contact");
 const managerStatusActions = document.getElementById("manager-status-actions");
 const managerStatusDismiss = document.getElementById("manager-status-dismiss");
+const managerAnnouncement = document.getElementById("manager-announcement");
+const managerAnnouncementMessage = document.getElementById("manager-announcement-message");
+const managerAnnouncementClose = document.getElementById("manager-announcement-close");
+
+const assistantLauncher = document.getElementById("assistant-launcher");
+const assistantPanel = document.getElementById("assistant-panel");
+const assistantClose = document.getElementById("assistant-close");
+const assistantTranscript = document.getElementById("assistant-transcript");
+const assistantForm = document.getElementById("assistant-form");
+const assistantInput = document.getElementById("assistant-input");
+const assistantSend = document.getElementById("assistant-send");
+const assistantConversation = [];
 
 // About Modal Elements
 const aboutModal = document.getElementById("about-modal");
@@ -931,6 +944,7 @@ function resetManagerModal() {
         managerStatus.hidden = true;
         managerStatus.classList.remove("is-error");
     }
+    if (managerStatusContact) managerStatusContact.hidden = true;
     if (managerStatusActions) managerStatusActions.hidden = true;
 }
 
@@ -940,7 +954,46 @@ function showManagerStatus(message, isError = false) {
     managerStatus.classList.toggle("is-error", isError);
     managerStatus.setAttribute("role", isError ? "alert" : "status");
     managerStatus.hidden = false;
+    if (managerStatusContact) managerStatusContact.hidden = false;
     if (managerStatusActions) managerStatusActions.hidden = isError;
+}
+
+function showManagerAnnouncement(message, persist = true) {
+    if (!managerAnnouncement || !managerAnnouncementMessage) return;
+    managerAnnouncementMessage.textContent = message;
+    managerAnnouncement.hidden = false;
+    if (!persist) return;
+    const emailNotSent = message.includes("couldn't send") || message.includes("could not be sent");
+    const savedMessage = emailNotSent
+        ? "Your claim request was saved, but the confirmation email could not be sent. We'll aim to review it within 48 hours."
+        : "Your claim request was received. A confirmation email has been sent. We'll aim to review it within 48 hours.";
+    try {
+        sessionStorage.setItem("managerAnnouncement", savedMessage);
+    } catch (error) {
+        console.warn("Could not persist manager confirmation for this tab:", error.message);
+    }
+}
+
+function restoreManagerAnnouncement() {
+    try {
+        const savedMessage = sessionStorage.getItem("managerAnnouncement");
+        if (savedMessage) showManagerAnnouncement(savedMessage, false);
+    } catch (error) {
+        console.warn("Could not restore manager confirmation for this tab:", error.message);
+    }
+}
+
+restoreManagerAnnouncement();
+
+if (managerAnnouncementClose) {
+    managerAnnouncementClose.addEventListener("click", () => {
+        if (managerAnnouncement) managerAnnouncement.hidden = true;
+        try {
+            sessionStorage.removeItem("managerAnnouncement");
+        } catch (error) {
+            console.warn("Could not clear manager confirmation for this tab:", error.message);
+        }
+    });
 }
 
 if (navClaimBtn) navClaimBtn.addEventListener("click", (e) => {
@@ -993,11 +1046,9 @@ if (managerForm) {
                 ? `Hi there, this is RentWorth. We received your request to claim ${formData.get("property_name")}.\n\nWe'll review it and aim to confirm within 48 hours. A confirmation has been sent to ${formData.get("corporate_email")}.\n\nThanks,\nThe RentWorth team.`
                 : "Your request has been saved, but we couldn't send the confirmation email just now. We'll review it and aim to confirm within 48 hours.";
 
-            managerForm.reset();
-            managerForm.style.display = "none";
-            if (managerModalTitle) managerModalTitle.textContent = "Request received";
-            if (managerModalDescription) managerModalDescription.hidden = true;
-            showManagerStatus(confirmationMessage);
+            if (managerModal) managerModal.style.display = "none";
+            resetManagerModal();
+            showManagerAnnouncement(confirmationMessage);
         } catch (err) {
             console.error(err);
             showManagerStatus(`We couldn't submit your request: ${err.message}`, true);
@@ -1009,6 +1060,76 @@ if (managerForm) {
         }
     });
 }
+
+function appendAssistantMessage(role, text, extraClass = "") {
+    if (!assistantTranscript) return null;
+    const messageElement = document.createElement("div");
+    messageElement.className = `assistant-message assistant-message-${role}${extraClass ? ` ${extraClass}` : ""}`;
+    messageElement.textContent = text;
+    assistantTranscript.appendChild(messageElement);
+    assistantTranscript.scrollTop = assistantTranscript.scrollHeight;
+    return messageElement;
+}
+
+function closeAssistantPanel() {
+    if (!assistantPanel || !assistantLauncher) return;
+    assistantPanel.hidden = true;
+    assistantLauncher.setAttribute("aria-expanded", "false");
+    assistantLauncher.focus();
+}
+
+if (assistantLauncher && assistantPanel) {
+    assistantLauncher.addEventListener("click", () => {
+        assistantPanel.hidden = false;
+        assistantLauncher.setAttribute("aria-expanded", "true");
+        assistantInput?.focus();
+    });
+}
+
+if (assistantClose) assistantClose.addEventListener("click", closeAssistantPanel);
+
+if (assistantForm && assistantInput && assistantSend) {
+    assistantForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const message = assistantInput.value.trim();
+        if (!message) return;
+
+        assistantConversation.push({ role: "user", text: message });
+        if (assistantConversation.length > 12) assistantConversation.splice(0, assistantConversation.length - 12);
+        appendAssistantMessage("user", message);
+        assistantInput.value = "";
+        assistantInput.disabled = true;
+        assistantSend.disabled = true;
+        assistantSend.textContent = "Sending...";
+        const pendingMessage = appendAssistantMessage("model", "Thinking...", "assistant-message-pending");
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/assistant/chat`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: assistantConversation })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "The assistant couldn't respond.");
+
+            assistantConversation.push({ role: "model", text: data.reply });
+            if (pendingMessage) pendingMessage.textContent = data.reply;
+            if (pendingMessage) pendingMessage.classList.remove("assistant-message-pending");
+        } catch (error) {
+            if (pendingMessage) pendingMessage.textContent = `${error.message} For help, email support@rentworth.app.`;
+            if (pendingMessage) pendingMessage.classList.remove("assistant-message-pending");
+        } finally {
+            assistantInput.disabled = false;
+            assistantSend.disabled = false;
+            assistantSend.textContent = "Send";
+            assistantInput.focus();
+        }
+    });
+}
+
+window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && assistantPanel && !assistantPanel.hidden) closeAssistantPanel();
+});
 
 // Modal outside click dismiss
 window.addEventListener("click", (e) => {

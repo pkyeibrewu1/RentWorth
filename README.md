@@ -15,6 +15,7 @@ RentWorth helps students compare housing using first-hand reviews from verified 
 - Submit property-manager claims with optional authorization proof.
 - Review pending claims in the admin page at `frontend/html/admin.html`.
 - Send a claim-received email when `EMAIL_USER` and `EMAIL_PASS` are configured. The email confirms receipt, sets a 48-hour review expectation, and invites replies for other questions.
+- Ask the Gemini-powered assistant general renting and site-use questions. Claim-status questions are directed to support.
 
 ## Local Setup
 
@@ -26,7 +27,7 @@ Requirements: Node.js 18 or later and npm.
    npm --prefix backend install
    ```
 
-2. Copy `.env.example` to `.env` in the repository root. Configure `EMAIL_USER` and `EMAIL_PASS` to use a Gmail sender and a Gmail App Password. Do not use your normal Gmail password or commit `.env`.
+2. Copy `.env.example` to `.env` in the repository root. Configure `EMAIL_USER` and `EMAIL_PASS` to use a Gmail sender and a Gmail App Password. Set `GEMINI_API_KEY` from Google AI Studio to enable the chat; `GEMINI_MODEL` is optional. Do not use your normal Gmail password or commit `.env`.
 
 3. Start the API:
 
@@ -45,6 +46,7 @@ Submitted claims are stored with `pending` status and appear in `frontend/html/a
 ## Security Notes
 
 - Keep `.env`, the SQLite database, uploaded documents, and real credentials out of Git. `.env.example` contains placeholders only.
+- The assistant sends chat text to Google's Gemini API. Do not enter passwords, financial details, or private documents; restrict the Gemini key to the Gemini API and keep it server-side.
 - The admin claims page and API routes currently have no authentication. Do not expose them publicly until access control is added.
 - Approval generates a manager access code, but the current admin UI does not display or email that code. Manager replies therefore need an additional delivery step before this workflow is complete.
 - Without email settings, claims are still saved, but the API reports that it could not send the confirmation email.

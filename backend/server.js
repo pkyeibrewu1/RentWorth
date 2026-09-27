@@ -27,6 +27,10 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(uploadDir));
 
+const assistantRequestBuckets = new Map();
+const assistantRateWindowMs = 60 * 1000;
+const assistantRateLimit = 12;
+
 // Mail Transporter Setup
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -271,9 +275,9 @@ app.post('/api/claims', upload.single('proof'), async (req, res) => {
             const confirmationEmail = {
                 from: `"RentWorth" <${process.env.EMAIL_USER}>`,
                 to: corporate_email.trim(),
-                replyTo: process.env.EMAIL_USER,
+                replyTo: 'support@rentworth.app',
                 subject: 'We received your RentWorth property claim request',
-                text: `Hello,\n\nWe have received your request to claim the RentWorth listing for ${property_name.trim()}. This email confirms receipt only; it does not mean the claim has been approved.\n\nOur team aims to review your request and send a decision within 48 hours of submission. If you have other questions in the meantime, please reply to this email. We are unable to respond to questions about approval status until the 48-hour review period has passed.\n\nThank you,\nRentWorth Verification Team`
+                text: `Hello,\n\nWe have received your request to claim the RentWorth listing for ${property_name.trim()}. This email confirms receipt only; it does not mean the claim has been approved.\n\nOur team aims to review your request and send a decision within 48 hours of submission. For other questions or issues, reply to this email or contact support@rentworth.app. We are unable to respond to questions about approval status until the 48-hour review period has passed.\n\nThank you,\nRentWorth Verification Team`
             };
 
             const sendConfirmation = async () => {
@@ -297,6 +301,111 @@ app.post('/api/claims', upload.single('proof'), async (req, res) => {
         });
     } catch (err) {
         res.status(500).json({ error: 'Failed to store verification proof.' });
+    }
+});
+
+app.post('/api/assistant/chat', async (req, res) => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        return res.status(503).json({ error: 'Gemini help is not configured yet.' });
+    }
+
+    const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+    if (!/^[A-Za-z0-9._-]+$/.test(model)) {
+        return res.status(500).json({ error: 'The assistant model is misconfigured.' });
+    }
+
+    const now = Date.now();
+    const clientKey = req.ip || req.socket.remoteAddress || 'unknown';
+    let requestBucket = assistantRequestBuckets.get(clientKey);
+    if (!requestBucket || requestBucket.resetAt <= now) {
+        if (assistantRequestBuckets.size >= 2000) {
+            for (const [key, bucket] of assistantRequestBuckets) {
+                if (bucket.resetAt <= now) assistantRequestBuckets.delete(key);
+            }
+        }
+        if (assistantRequestBuckets.size >= 2000 && !requestBucket) {
+            return res.status(503).json({ error: 'The assistant is busy. Please try again shortly.' });
+        }
+        requestBucket = { count: 0, resetAt: now + assistantRateWindowMs };
+        assistantRequestBuckets.set(clientKey, requestBucket);
+    }
+    if (requestBucket.count >= assistantRateLimit) {
+        return res.status(429).json({ error: 'Please wait a minute before sending more questions.' });
+    }
+    requestBucket.count += 1;
+
+    const messages = req.body?.messages;
+    if (!Array.isArray(messages) || messages.length === 0 || messages.length > 12) {
+        return res.status(400).json({ error: 'Send up to 12 recent chat messages.' });
+    }
+
+    const validMessages = messages.every(message =>
+        message &&
+        ['user', 'model'].includes(message.role) &&
+        typeof message.text === 'string' &&
+        message.text.trim().length > 0 &&
+        message.text.length <= 1000
+    );
+    if (!validMessages || messages[messages.length - 1].role !== 'user') {
+        return res.status(400).json({ error: 'Please send a valid text question.' });
+    }
+
+    const systemInstruction = [
+        'You are RentWorth AI, a concise and friendly assistant for a student-housing review website.',
+        'Help visitors understand rental questions and how to use RentWorth.',
+        'Do not claim to know a property’s current condition, pricing, or reviews unless the user provides that information.',
+        'You cannot access, approve, or provide status updates about property claims or user accounts. Direct claim and account questions to support@rentworth.app.',
+        'Do not request or encourage users to share passwords, financial information, identity documents, or private lease details.',
+        'Do not provide legal or financial advice; suggest contacting a qualified professional for those matters.',
+        'Be clear when you are uncertain and keep answers brief.'
+    ].join(' ');
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+    try {
+        const geminiResponse = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': apiKey
+                },
+                body: JSON.stringify({
+                    systemInstruction: { parts: [{ text: systemInstruction }] },
+                    contents: messages.map(message => ({
+                        role: message.role,
+                        parts: [{ text: message.text.trim() }]
+                    })),
+                    generationConfig: { maxOutputTokens: 512, temperature: 0.5 }
+                }),
+                signal: controller.signal
+            }
+        );
+
+        if (!geminiResponse.ok) {
+            console.error('Gemini assistant request failed with status:', geminiResponse.status);
+            return res.status(502).json({ error: 'The assistant is temporarily unavailable. Please try again later.' });
+        }
+
+        const data = await geminiResponse.json();
+        const reply = data.candidates?.[0]?.content?.parts
+            ?.map(part => part.text || '')
+            .join('')
+            .trim();
+        if (!reply) {
+            return res.status(502).json({ error: 'The assistant did not return an answer. Please try again.' });
+        }
+        res.json({ reply });
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            return res.status(504).json({ error: 'The assistant took too long to respond. Please try again.' });
+        }
+        console.error('Gemini assistant request error:', error.message);
+        res.status(502).json({ error: 'The assistant is temporarily unavailable. Please try again later.' });
+    } finally {
+        clearTimeout(timeoutId);
     }
 });
 
