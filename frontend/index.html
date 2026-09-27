@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="./styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -15,53 +15,54 @@
   <header class="navbar">
     <div class="nav-container">
       <div class="brand">
-        <img src="./images/RentWorthLogo.png" alt="RentWorth Logo" class="brand-logo" onerror="this.style.display='none'">
+        <img src="./images/RentWorthLogo.svg" alt="RentWorth home icon" class="brand-logo" onerror="this.style.display='none'">
         <div class="brand-text">
           <span class="brand-title">RentWorth</span>
           <span class="brand-sub">Verified Student Housing</span>
         </div>
       </div>
       <nav class="nav-links">
-        <a href="#" id="nav-about-btn" class="nav-item">About</a>
-        <a href="#" id="nav-claim-btn" class="nav-item">Manager</a>
-        <button type="button" class="btn-primary" id="open-modal-btn">+ Rate a Place</button>
+        <a href="#" id="nav-about-btn" class="nav-item">About RentWorth</a>
+        <a href="#" id="nav-claim-btn" class="nav-item">For managers</a>
+        <button type="button" class="btn-primary" id="open-modal-btn">Write a review</button>
       </nav>
     </div>
   </header>
   <!-- Hero Section -->
   <section class="hero-section">
     <div class="hero-content">
-      <!-- Small Label -->
-      <div class="hero-badge-pill">
-        <span class="badge-dot">●</span>
-        <span>STUDENT-VERIFIED HOUSING</span>
-      </div>
-
-      <!-- Main Headline & Supporting Line -->
-      <h1 class="hero-title">See what they don't show you.</h1>
-      <p class="hero-supporting-line">Real leases. Real rents. Real student experiences.</p>
-
-      <!-- Description -->
-      <p class="hero-pain-points">Mold. Broken elevators. Noise. Bad maintenance. Hidden fees.</p>
-      <p class="hero-subtitle">Find out what it's really like to live there before you sign.</p>
-
-      <!-- Search Bar -->
-      <div class="search-wrapper">
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="search-input" placeholder="Search by university, apartment, or complex..." autocomplete="off">
+      <div class="hero-copy">
+        <div class="hero-badge-pill">
+          <span class="badge-dot">●</span>
+          <span>NOTES FROM STUDENTS WHO LIVED THERE</span>
         </div>
-        <div id="search-autocomplete-list" class="autocomplete-container"></div>
+
+        <h1 class="hero-title">What was it <span class="hero-title-accent">actually</span> like to live there?</h1>
+        <p class="hero-supporting-line">The noise. The repairs. That bill after fees.</p>
+        <p class="hero-pain-points">Could you hear your neighbors? How long did repairs take? What did rent leave out?</p>
+        <p class="hero-subtitle">First-hand notes from students who know the building beyond the tour.</p>
+
+        <div class="search-wrapper">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Find a school or apartment..." autocomplete="off">
+          </div>
+          <div id="search-autocomplete-list" class="autocomplete-container"></div>
+        </div>
+
+        <div class="hero-trust-indicators">
+          <span class="trust-item"><span class="check-icon">✓</span> Verified Students</span>
+          <span class="trust-sep">·</span>
+          <span class="trust-item"><span class="check-icon">✓</span> Verified Leases</span>
+          <span class="trust-sep">·</span>
+          <span class="trust-item"><span class="lock-icon">🔒</span> Privacy Protected</span>
+        </div>
       </div>
 
-      <!-- Trust Indicators -->
-      <div class="hero-trust-indicators">
-        <span class="trust-item"><span class="check-icon">✓</span> Verified Students</span>
-        <span class="trust-sep">·</span>
-        <span class="trust-item"><span class="check-icon">✓</span> Verified Leases</span>
-        <span class="trust-sep">·</span>
-        <span class="trust-item"><span class="lock-icon">🔒</span> Privacy Protected</span>
-      </div>
+      <figure class="hero-visual">
+        <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&amp;fit=crop&amp;w=1400&amp;q=85" alt="Sunlit apartment living room with a sofa and coffee table" fetchpriority="high">
+        <figcaption class="hero-photo-note">A nice tour is only part of the story.</figcaption>
+      </figure>
     </div>
   </section>
 
@@ -97,7 +98,7 @@
     </section>
 
     <div class="feed-header">
-      <h2 id="view-title">Recent Verified Tenant Reviews</h2>
+      <h2 id="view-title">What renters are saying</h2>
       <span id="review-count" class="review-counter-chip">Loading reviews...</span>
     </div>
 
@@ -305,12 +306,13 @@
   <div class="modal" id="about-modal">
     <div class="modal-card about-card">
       <div class="modal-header">
-        <h3>Why I built RentWorth</h3>
+        <h3>About RentWorth</h3>
         <button type="button" class="close-btn" id="close-about-modal-btn">&times;</button>
       </div>
       <div class="about-content">
-        <p>Choosing student housing shouldn't mean relying on perfectly staged photos and reviews you can't verify.</p>
-        <p>RentWorth was engineered to give students transparent access to real experiences from residents who actually lived in these communities—safeguarded by browser-side PII redaction and university-gated authentication.</p>
+        <p>Apartment tours show you the new countertops. They can't tell you if the walls are thin, whether maintenance calls back, or what rent looks like after the fees.</p>
+        <p>I started RentWorth because students deserve advice from people who've actually lived in a building, not just the polished version in a listing. The goal is simple: make the next renter's decision a little less of a guess.</p>
+        <p>Students verify with a university email. Lease images can be redacted in your browser before they're uploaded, so personal details stay out of the picture.</p>
         <div class="founder-signature">
           <strong>Pamela Kyei Brewu</strong>
           <span>Founder & Full-Stack Developer</span>
@@ -324,7 +326,7 @@
     <div class="footer-container">
       <div class="footer-brand">
         <div class="brand-title">RentWorth</div>
-        <p class="footer-tagline">Real leases. Real rents. Real student experiences.</p>
+        <p class="footer-tagline">The stuff you only learn after move-in.</p>
       </div>
       <div class="footer-meta">
         <p class="footer-credit">Built by <span class="creator-name">Pamela Kyei Brewu</span></p>

@@ -180,8 +180,8 @@ async function fetchReviews() {
     if (!reviewsStream) return;
     reviewsStream.innerHTML = `
         <div style="text-align: center; padding: 45px 20px; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-            <p style="color: var(--accent-gold); font-weight: 700; margin-bottom: 6px;">Loading verified reviews...</p>
-            <p style="color: var(--text-muted); font-size: 0.82rem;">Please allow 20-30 seconds if the free cloud backend is waking up.</p>
+            <p style="color: var(--accent-gold); font-weight: 700; margin-bottom: 6px;">Looking for the latest resident reviews...</p>
+            <p style="color: var(--text-muted); font-size: 0.82rem;">This can take a few seconds.</p>
         </div>
     `;
     try {
@@ -194,8 +194,8 @@ async function fetchReviews() {
         console.error("Error loading reviews:", error);
         reviewsStream.innerHTML = `
             <div style="text-align: center; padding: 45px 20px; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-                <p style="color: var(--score-red); font-weight: 700; margin-bottom: 6px;">Unable to load reviews.</p>
-                <p style="color: var(--text-muted); font-size: 0.85rem;">The backend server may still be spinning up. Please refresh the page in a moment.</p>
+                <p style="color: var(--score-red); font-weight: 700; margin-bottom: 6px;">Couldn’t load the reviews just now.</p>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Give it a moment, then refresh the page.</p>
             </div>
         `;
     }
@@ -277,7 +277,7 @@ function applyAllFilters() {
         return matchesSearch && matchesSchool && matchesComplex && matchesRating;
     });
 
-    let titleLabel = "Recent Verified Tenant Reviews";
+    let titleLabel = "What renters are saying";
     if (selectedSchool !== "all" && selectedComplex !== "all") {
         titleLabel = `${selectedComplex} near ${selectedSchool}`;
     } else if (selectedSchool !== "all") {
@@ -295,14 +295,14 @@ function applyAllFilters() {
 function renderReviews(items, filterLabel = "") {
     if (!reviewsStream) return;
     reviewsStream.innerHTML = "";
-    if (viewTitle) viewTitle.textContent = filterLabel || "Recent Verified Tenant Reviews";
+    if (viewTitle) viewTitle.textContent = filterLabel || "What renters are saying";
     if (reviewCount) reviewCount.textContent = `Showing ${items.length} ${items.length === 1 ? "verified review" : "verified reviews"}`;
 
     if (items.length === 0) {
         reviewsStream.innerHTML = `
             <div style="text-align: center; padding: 45px 20px; background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-                <p style="color: var(--text-main); font-weight: 700; margin-bottom: 6px;">No reviews match this filter.</p>
-                <p style="color: var(--text-muted); font-size: 0.88rem;">Try clearing your filters or be the first student to submit a review.</p>
+                <p style="color: var(--text-main); font-weight: 700; margin-bottom: 6px;">No stories here yet.</p>
+                <p style="color: var(--text-muted); font-size: 0.88rem;">Lived here? Leave the first review. The next renter will appreciate it.</p>
             </div>
         `;
         return;
