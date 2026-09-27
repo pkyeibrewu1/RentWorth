@@ -134,6 +134,12 @@ const managerModal = document.getElementById("manager-modal");
 const navClaimBtn = document.getElementById("nav-claim-btn");
 const closeManagerModalBtn = document.getElementById("close-manager-modal-btn");
 const managerForm = document.getElementById("manager-form");
+const managerModalTitle = document.getElementById("manager-modal-title");
+const managerModalDescription = document.getElementById("manager-modal-desc");
+const managerStatus = document.getElementById("manager-status");
+const managerStatusMessage = document.getElementById("manager-status-message");
+const managerStatusActions = document.getElementById("manager-status-actions");
+const managerStatusDismiss = document.getElementById("manager-status-dismiss");
 
 // About Modal Elements
 const aboutModal = document.getElementById("about-modal");
@@ -914,13 +920,49 @@ if (replyForm) {
 }
 
 // Manager Claim Handlers
-if (navClaimBtn) navClaimBtn.addEventListener("click", (e) => { e.preventDefault(); if (managerModal) managerModal.style.display = "flex"; });
-if (closeManagerModalBtn) closeManagerModalBtn.addEventListener("click", () => { if (managerModal) managerModal.style.display = "none"; });
+function resetManagerModal() {
+    if (managerForm) {
+        managerForm.reset();
+        managerForm.style.display = "";
+    }
+    if (managerModalTitle) managerModalTitle.textContent = "Claim Property Listing";
+    if (managerModalDescription) managerModalDescription.hidden = false;
+    if (managerStatus) {
+        managerStatus.hidden = true;
+        managerStatus.classList.remove("is-error");
+    }
+    if (managerStatusActions) managerStatusActions.hidden = true;
+}
+
+function showManagerStatus(message, isError = false) {
+    if (!managerStatus || !managerStatusMessage) return;
+    managerStatusMessage.textContent = message;
+    managerStatus.classList.toggle("is-error", isError);
+    managerStatus.setAttribute("role", isError ? "alert" : "status");
+    managerStatus.hidden = false;
+    if (managerStatusActions) managerStatusActions.hidden = isError;
+}
+
+if (navClaimBtn) navClaimBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    resetManagerModal();
+    if (managerModal) managerModal.style.display = "flex";
+});
+if (closeManagerModalBtn) closeManagerModalBtn.addEventListener("click", () => {
+    if (managerModal) managerModal.style.display = "none";
+    resetManagerModal();
+});
+if (managerStatusDismiss) managerStatusDismiss.addEventListener("click", () => {
+    if (managerModal) managerModal.style.display = "none";
+    resetManagerModal();
+});
 
 if (managerForm) {
     managerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
+        const submitButton = managerForm.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton?.textContent;
         const proofInput = document.getElementById("manager-proof");
         const formData = new FormData();
         formData.append("property_name", document.getElementById("manager-prop")?.value.trim() || "");
@@ -928,6 +970,11 @@ if (managerForm) {
         formData.append("role", document.getElementById("manager-role")?.value || "");
         if (proofInput && proofInput.files.length > 0) {
             formData.append("proof", proofInput.files[0]);
+        }
+
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = "Sending...";
         }
 
         try {
@@ -941,12 +988,24 @@ if (managerForm) {
                 throw new Error(errData.error || "Claim failed");
             }
 
-            alert("Claim request received. Corporate credentials will be reviewed within 24 hours.");
+            const result = await response.json();
+            const confirmationMessage = result.emailSent
+                ? `Hi there, this is RentWorth. We received your request to claim ${formData.get("property_name")}.\n\nWe'll review it and aim to confirm within 48 hours. A confirmation has been sent to ${formData.get("corporate_email")}.\n\nThanks,\nThe RentWorth team.`
+                : "Your request has been saved, but we couldn't send the confirmation email just now. We'll review it and aim to confirm within 48 hours.";
+
             managerForm.reset();
-            if (managerModal) managerModal.style.display = "none";
+            managerForm.style.display = "none";
+            if (managerModalTitle) managerModalTitle.textContent = "Request received";
+            if (managerModalDescription) managerModalDescription.hidden = true;
+            showManagerStatus(confirmationMessage);
         } catch (err) {
             console.error(err);
-            alert(`Error submitting claim: ${err.message}`);
+            showManagerStatus(`We couldn't submit your request: ${err.message}`, true);
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
+            }
         }
     });
 }
@@ -954,7 +1013,13 @@ if (managerForm) {
 // Modal outside click dismiss
 window.addEventListener("click", (e) => {
     if (e.target === reviewModal) reviewModal.style.display = "none";
-    if (e.target === managerModal) managerModal.style.display = "none";
+    if (e.target === managerModal) {
+        const confirmationVisible = managerStatus && !managerStatus.hidden && !managerStatus.classList.contains("is-error");
+        if (!confirmationVisible) {
+            managerModal.style.display = "none";
+            resetManagerModal();
+        }
+    }
     if (e.target === redactorModal) redactorModal.style.display = "none";
     if (e.target === replyModal) replyModal.style.display = "none";
     if (e.target === aboutModal) aboutModal.style.display = "none";

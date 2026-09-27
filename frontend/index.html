@@ -272,10 +272,10 @@
   <div class="modal" id="manager-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Claim Property Listing</h3>
+        <h3 id="manager-modal-title">Claim Property Listing</h3>
         <button type="button" class="close-btn" id="close-manager-modal-btn">&times;</button>
       </div>
-      <p class="modal-desc">Register with a corporate email to earn the "Verified Management" badge and respond to resident reviews.</p>
+      <p class="modal-desc" id="manager-modal-desc">Register with a corporate email to earn the "Verified Management" badge and respond to resident reviews.</p>
       <form id="manager-form">
         <div class="form-group">
           <label for="manager-prop">Property Name</label>
@@ -299,6 +299,12 @@
         </div>
         <button type="submit" class="btn-gold-action">Submit Claim Request</button>
       </form>
+      <div class="manager-status" id="manager-status" role="status" aria-live="polite" hidden>
+        <p id="manager-status-message"></p>
+        <div class="manager-status-actions" id="manager-status-actions" hidden>
+          <button type="button" class="btn-secondary" id="manager-status-dismiss">Done</button>
+        </div>
+      </div>
     </div>
   </div>
 

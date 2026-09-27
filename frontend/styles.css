@@ -817,6 +817,37 @@ body {
   line-height: 1.5;
 }
 
+.manager-status {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid #C7D0B8;
+  border-left: 4px solid #687A4D;
+  border-radius: var(--radius-sm);
+  background: #EEF2E8;
+}
+
+.manager-status.is-error {
+  border-color: #E6B5A7;
+  border-left-color: #A44932;
+  background: #FBEEE9;
+}
+
+.manager-status p {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.manager-status-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.manager-status-actions[hidden] {
+  display: none;
+}
+
 .close-btn {
   background: transparent;
   border: none;

@@ -265,7 +265,33 @@ app.post('/api/claims', upload.single('proof'), async (req, res) => {
         `;
         db.run(sql, [property_name, corporate_email, role, savedProof], function (err) {
             if (err) return res.status(500).json({ error: err.message });
-            res.status(201).json({ message: 'Claim request submitted.', claimId: this.lastID });
+            const claimId = this.lastID;
+
+            const confirmationEmail = {
+                from: `"RentWorth" <${process.env.EMAIL_USER}>`,
+                to: corporate_email.trim(),
+                subject: 'We received your RentWorth property claim request',
+                text: `Hi there,\n\nThis is RentWorth. We received your request to claim ${property_name.trim()}. We will review the details and aim to confirm within 48 hours.\n\nThanks,\nThe RentWorth team.`
+            };
+
+            const sendConfirmation = async () => {
+                if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) return false;
+                try {
+                    await transporter.sendMail(confirmationEmail);
+                    return true;
+                } catch (mailErr) {
+                    console.error('Claim confirmation email error:', mailErr);
+                    return false;
+                }
+            };
+
+            sendConfirmation().then(emailSent => {
+                res.status(201).json({
+                    message: 'Claim request submitted.',
+                    claimId,
+                    emailSent
+                });
+            });
         });
     } catch (err) {
         res.status(500).json({ error: 'Failed to store verification proof.' });
