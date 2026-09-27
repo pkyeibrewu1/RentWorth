@@ -1,48 +1,60 @@
-# RentWorth 🏢
+# RentWorth
 
-> **See what they don't show you.** > A full-stack, privacy-centric student housing review platform featuring in-browser PII redaction and .edu-gated lease verification.
+RentWorth helps students compare housing using first-hand reviews from verified tenants. Reviews require a university email verification, and lease images can be redacted in the browser before upload.
 
-[![Live Site](https://img.shields.io/badge/Live_Site-rentworth.app-2ea44f?style=for-the-badge&logo=googlechrome&logoColor=white)](https://rentworth.app)
-[![API Status](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://rentworth.onrender.com/health)
-[![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Database](https://img.shields.io/badge/Database-SQLite3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+## Live Services
 
----
+- Website: [rentworth.app](https://rentworth.app)
+- API health: [rentworth.onrender.com/health](https://rentworth.onrender.com/health)
 
-## 🌐 Live Product
-* **Production URL:** [https://rentworth.app](https://rentworth.app)
-* **Backend Health Check:** [https://rentworth.onrender.com/health](https://rentworth.onrender.com/health)
-* **Management Verification Portal:** [https://rentworth.app/html/admin.html](https://rentworth.app/html/admin.html)
+## Features
 
----
+- Search and filter tenant reviews by property, university, and rating.
+- Verify student email addresses with a one-time code.
+- Redact personal details from lease images in the browser; uploaded images are reprocessed as WebP by the backend.
+- Submit property-manager claims with optional authorization proof.
+- Review pending claims in the admin page at `frontend/html/admin.html`.
+- Send a claim-received email when `EMAIL_USER` and `EMAIL_PASS` are configured. The email confirms receipt, sets a 48-hour review expectation, and invites replies for other questions.
 
-## 💡 Why RentWorth?
-Apartment listings typically display staged model units, curated marketing photos, and astroturfed testimonials. Crucial day-to-day realities—including recurring mold, persistent elevator outages, unexpected utility fees, and unresponsive management—are difficult for college students to detect before executing a legally binding lease.
+## Local Setup
 
-**RentWorth** bridges this information asymmetry by providing a platform for authentic tenant experiences while addressing the primary barrier to transparent reviews: **tenant privacy and verification validity**.
+Requirements: Node.js 18 or later and npm.
 
----
+1. Install backend dependencies:
 
-## 🛠️ Architecture & Tech Stack
+   ```sh
+   npm --prefix backend install
+   ```
 
-* **Frontend:** HTML5, CSS3, Modern Vanilla JavaScript, HTML5 Canvas API
-* **Backend:** Node.js, Express.js, Multer
-* **Image Sanitization:** Sharp (Metadata stripping, WebP compression)
-* **Data Storage:** SQLite3
-* **Infrastructure:** Render Web Services, Custom Domain via Spaceship
+2. Copy `.env.example` to `.env` in the repository root. Configure `EMAIL_USER` and `EMAIL_PASS` to use a Gmail sender and a Gmail App Password. Do not use your normal Gmail password or commit `.env`.
 
----
+3. Start the API:
 
-## 🔑 Key Engineering Implementations
+   ```sh
+   npm --prefix backend start
+   ```
 
-1. **Client-Side Document Redactor (HTML5 Canvas):** Sensitive documents are rendered directly inside an HTML5 `<canvas>`. Users blackout legal names, SSNs, and unit numbers in the browser so PII never touches the server unredacted.
-2. **Backend EXIF Cleansing & WebP Pipeline:** Images are processed in-memory using the Sharp library to strip GPS/camera metadata and convert to optimized WebP.
-3. **University Email OTP Verification:** Reviews require confirming a 6-digit one-time passcode sent to a verified `.edu` address.
-4. **Canonical Aliasing & Filtering:** Search maps common colloquial nicknames (e.g., "112" to "One12 Courtland") and dynamically filters reviews.
-5. **Gated Manager Response System:** Property managers must be approved before they can post official management responses to reviews.
+4. Serve `frontend/` with a local static server, such as VS Code Live Server, and open `frontend/index.html`. The frontend uses `http://localhost:5000/api` when served from localhost.
 
----
+The backend stores local data in `backend/rentworth.db` and uploaded proof images in `backend/uploads/`. These are local/runtime data and are excluded from Git.
 
-## 👤 Author
-**Pamela Kyei Brewu** * Website: [rentworth.app](https://rentworth.app)  
-* GitHub: [@pkyeibrewu1](https://github.com/pkyeibrewu1)
+## Manager Claim Review
+
+Submitted claims are stored with `pending` status and appear in `frontend/html/admin.html`. An admin can open optional proof, then approve or reject a claim. Claim confirmation email is sent immediately when mail settings are available; the review decision is a separate manual step and may take up to 48 hours.
+
+## Security Notes
+
+- Keep `.env`, the SQLite database, uploaded documents, and real credentials out of Git. `.env.example` contains placeholders only.
+- The admin claims page and API routes currently have no authentication. Do not expose them publicly until access control is added.
+- Approval generates a manager access code, but the current admin UI does not display or email that code. Manager replies therefore need an additional delivery step before this workflow is complete.
+- Without email settings, claims are still saved, but the API reports that it could not send the confirmation email.
+
+## Technology
+
+- Frontend: HTML, CSS, vanilla JavaScript, and Canvas API
+- Backend: Node.js, Express, Multer, Nodemailer, Sharp, and SQLite
+- Hosting: Render and a custom domain
+
+## Author
+
+Pamela Kyei Brewu · [rentworth.app](https://rentworth.app) · [GitHub](https://github.com/pkyeibrewu1)
