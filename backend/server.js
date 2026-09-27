@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
 const nodemailer = require('nodemailer');
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
 const db = require('./database');
 
 const app = express();
@@ -270,8 +271,9 @@ app.post('/api/claims', upload.single('proof'), async (req, res) => {
             const confirmationEmail = {
                 from: `"RentWorth" <${process.env.EMAIL_USER}>`,
                 to: corporate_email.trim(),
+                replyTo: process.env.EMAIL_USER,
                 subject: 'We received your RentWorth property claim request',
-                text: `Hi there,\n\nThis is RentWorth. We received your request to claim ${property_name.trim()}. We will review the details and aim to confirm within 48 hours.\n\nThanks,\nThe RentWorth team.`
+                text: `Hello,\n\nWe have received your request to claim the RentWorth listing for ${property_name.trim()}. This email confirms receipt only; it does not mean the claim has been approved.\n\nOur team aims to review your request and send a decision within 48 hours of submission. If you have other questions in the meantime, please reply to this email. We are unable to respond to questions about approval status until the 48-hour review period has passed.\n\nThank you,\nRentWorth Verification Team`
             };
 
             const sendConfirmation = async () => {
