@@ -27,7 +27,7 @@ Requirements: Node.js 18 or later and npm.
    npm --prefix backend install
    ```
 
-2. Copy `.env.example` to `.env` in the repository root. Configure `EMAIL_USER` and `EMAIL_PASS` to use a Gmail sender and a Gmail App Password. Set `GEMINI_API_KEY` from Google AI Studio to enable the chat; `GEMINI_MODEL` is optional. Do not use your normal Gmail password or commit `.env`.
+2. Copy `.env.example` to `.env` in the repository root. Configure the SpaceMail SMTP settings and the `support@rentworth.app` mailbox password. Set `GEMINI_API_KEY` from Google AI Studio to enable the chat; `GEMINI_MODEL` is optional. Never commit `.env`.
 
 3. Start the API:
 

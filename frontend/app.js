@@ -1042,9 +1042,9 @@ if (managerForm) {
             }
 
             const result = await response.json();
-            const confirmationMessage = result.emailSent
+            const confirmationMessage = result.emailSent === true
                 ? `Hi there, this is RentWorth. We received your request to claim ${formData.get("property_name")}.\n\nWe'll review it and aim to confirm within 48 hours. A confirmation has been sent to ${formData.get("corporate_email")}.\n\nThanks,\nThe RentWorth team.`
-                : "Your request has been saved, but we couldn't send the confirmation email just now. We'll review it and aim to confirm within 48 hours.";
+                : `Your request to claim ${formData.get("property_name")} was saved successfully. We are attempting to send a confirmation email to ${formData.get("corporate_email")}. We'll review it and aim to confirm within 48 hours.`;
 
             if (managerModal) managerModal.style.display = "none";
             resetManagerModal();

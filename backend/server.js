@@ -33,7 +33,12 @@ const assistantRateLimit = 12;
 
 // Mail Transporter Setup
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: process.env.EMAIL_SMTP_HOST || 'smtp.spacemail.com',
+    port: Number(process.env.EMAIL_SMTP_PORT || 465),
+    secure: process.env.EMAIL_SMTP_SECURE !== 'false',
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
     auth: {
         user: process.env.EMAIL_USER || '',
         pass: process.env.EMAIL_PASS || ''
@@ -291,12 +296,20 @@ app.post('/api/claims', upload.single('proof'), async (req, res) => {
                 }
             };
 
-            sendConfirmation().then(emailSent => {
-                res.status(201).json({
-                    message: 'Claim request submitted.',
-                    claimId,
-                    emailSent
+            sendConfirmation()
+                .then(emailSent => {
+                    if (!emailSent) {
+                        console.warn(`Claim ${claimId} saved, but its confirmation email was not sent.`);
+                    }
+                })
+                .catch(mailErr => {
+                    console.error(`Claim ${claimId} confirmation email failed:`, mailErr);
                 });
+
+            res.status(201).json({
+                message: 'Claim request submitted.',
+                claimId,
+                emailSent: null
             });
         });
     } catch (err) {
